@@ -6,7 +6,7 @@ from datetime import datetime
 # https://developers.google.com/maps/documentation/geocoding/get-api-key
 gmaps = googlemaps.Client(key="Add Your Key here")
 
-# Find the distance between two points ("lat1, lon1", "lat2, lon2")
+# Find the distance between two points ("lat0, lon0", "lat1, lon1")
 distances = gmaps.distance_matrix(
     "-23.434453, -46.387014", "-23.429687, -46.416829")
 
