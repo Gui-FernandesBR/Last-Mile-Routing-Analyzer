@@ -1,5 +1,4 @@
 import googlemaps
-from datetime import datetime
 
 # Load googlemaps by using the API key
 # API keys are generated in the 'Credentials' page, refer to following:
