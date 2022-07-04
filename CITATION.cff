@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use VRP-street-network, please cite it as below."
+authors:
+- family-names: "Alves"
+  given-names: "Guilherme F"
+  orcid: "https://orcid.org/0000-0003-3873-2699"
+title: "VRP-street-network"
+doi: "10.5281/zenodo.6792976"
+date-released: 2022-07-04
+url: "https://github.com/github/linguist"
+preferred-citation:
+  type: software
+  authors:
+  - family-names: "Alves"
+    given-names: "Guilherme F"
+    orcid: "https://orcid.org/0000-0003-3873-2699"
+  - family-names: "Fernandes"
+    given-names: "Felipe N."
+  doi: "10.5281/zenodo.6792976"
+  #journal: "Journal of Aerospace Engineering"
+  month: 7
+  title: "VRP-street-network"
+  #issue: 6
+  #volume: 34
+  year: 2022
