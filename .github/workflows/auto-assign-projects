@@ -20,4 +20,3 @@ jobs:
       if: github.event.action == 'opened'
       with:
         project: 'hhttps://github.com/users/Gui-FernandesBR/projects/1'
-        column_name: 'TODO'
