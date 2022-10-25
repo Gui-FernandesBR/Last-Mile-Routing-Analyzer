@@ -20,8 +20,6 @@ class route:
         self.number_of_planned_stops = 0
         self.number_of_actual_stops = 0
 
-        return None
-
     def set_planned_sequence(self, sequence, mode="fast"):
         """Set the planned sequence of the route. The planned sequence is the
         sequence of stops that the route is supposed to follow, usually
@@ -81,3 +79,28 @@ class route:
         )
 
         return None
+
+    def set_vehicle(self, vehicle):
+        self.vehicle = vehicle
+        return None
+
+    def get_vehicle(self):
+        return self.vehicle
+
+    def evaluate_sequence_adherence(self):
+        pass
+
+    def evaluate_route_status(self):
+        pass
+
+    # @classmethod
+    def evaluate_circuity_factor(self, sequence):
+        pass
+
+    # @classmethod
+    def evaluate_route_compactness(self, sequence):
+        pass
+        # return compactness
+
+    def print_info(self):
+        pass
