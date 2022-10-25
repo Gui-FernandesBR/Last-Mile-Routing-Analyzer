@@ -41,3 +41,4 @@ target/
 venv/
 venv2/
 .vrp_gui/
+.venv_thesis
