@@ -37,4 +37,36 @@ class package:
         # Evaluate other attributes
         self.volume = self.calculate_volume(dimensions)
 
+        pass
+
+    def calculate_volume(self, dimensions):
+        """Calculates the volume of the package, given its dimensions.
+
+        Parameters
+        ----------
+        dimensions : tuple
+            A tuple containing the dimensions of the package. The tuple must be
+            in the form (width, height, length).
+
+        Returns
+        -------
+        float
+            The volume of the package.
+        """
+        return dimensions[0] * dimensions[1] * dimensions[2]
+
+    def modify_status(self, status):
+        """Modifies the status of the package.
+
+        Parameters
+        ----------
+        status : str
+            The status of the package. The status must be one of the following:
+            'rejected', 'attempted', 'delivered'.
+
+        Returns
+        -------
+        None
+        """
+        self.status = status
         return None
