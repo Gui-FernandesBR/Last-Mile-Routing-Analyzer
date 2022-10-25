@@ -20,6 +20,8 @@ class route:
         self.number_of_planned_stops = 0
         self.number_of_actual_stops = 0
 
+        return None
+
     def set_planned_sequence(self, sequence, mode="fast"):
         """Set the planned sequence of the route. The planned sequence is the
         sequence of stops that the route is supposed to follow, usually

@@ -37,7 +37,7 @@ class package:
         # Evaluate other attributes
         self.volume = self.calculate_volume(dimensions)
 
-        pass
+        return None
 
     def calculate_volume(self, dimensions):
         """Calculates the volume of the package, given its dimensions.
