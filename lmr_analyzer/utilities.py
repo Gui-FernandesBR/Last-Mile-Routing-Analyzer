@@ -11,26 +11,14 @@ import googlemaps
 def Haversine(lat1, lon1, lat2, lon2):
     """
     Calculate the great circle distance between two points
-        Calculate the great circle distance between two points 
-    Calculate the great circle distance between two points
     on the earth (specified in decimal degrees)
     """
     # convert decimal degrees to radians
-        # convert decimal degrees to radians 
-    # convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
     # haversine formula
-        # haversine formula 
-    # haversine formula
     dlon = lon2 - lon1
-        dlon = lon2 - lon1 
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-        dlat = lat2 - lat1 
     dlat = lat2 - lat1
     a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
-    c = 2 * asin(sqrt(a))
-        c = 2 * asin(sqrt(a)) 
     c = 2 * asin(sqrt(a))
     # Radius of earth in kilometers is 6371
     km = 6371 * c
@@ -45,17 +33,56 @@ def drive_distance_gmaps(origin, destination):
     return directions_result[0]["legs"][0]["distance"]["value"]
 
 
+def drive_distance_osmnx(origin, destination):
+    """Calculate the driving distance between two points using OSMnx.
 
-    # def drive_distance_osrm(origin, destination):
-    #     import requests
-    #     import json
+    Parameters
+    ----------
+    origin : tuple
+        The origin point coordinates. The coordinates must be in the form (lat, lon).
+    destination : tuple
+        The destination point coordinates. The coordinates must be in the form (lat, lon).
 
-    #     url = 'http://router.project-osrm.org/route/v1/driving/'
-    #     url += str(origin[1]) + ',' + str(origin[0]) + ';' + str(destination[1]) + ',' + str(destination[0])
-    #     url += '?overview=false&steps=true&geometries=geojson'
-    #     response = requests.get(url)
-    #     data = json.loads(response.text)
-    #     return data['routes'][0]['legs'][0]['distance']
+    Returns
+    -------
+    route_length: float
+        The length of the shortest path between the origin and destination points.
+    """
+
+    # Define the bounding box of the area of interest
+    north = max(origin[0], destination[0])
+    south = min(origin[0], destination[0])
+    east = max(origin[1], destination[1])
+    west = min(origin[1], destination[1])
+
+    # Modify the bounding box if the distance between the points is too small
+    if abs(north - south) < 0.01:
+        north += 0.005
+        south -= 0.005
+    if abs(east - west) < 0.01:
+        east += 0.005
+        west -= 0.005
+
+    # Get the graph for the area of interest
+    G = ox.graph_from_bbox(
+        north=north, south=south, east=east, west=west, network_type="drive"
+    )
+
+    # Get the nearest nodes to the origin and destination points
+    origin_node = ox.distance.nearest_nodes(G, origin[1], origin[0])
+    destination_node = ox.distance.nearest_nodes(G, destination[1], destination[0])
+
+    # Get the shortest path between the origin and destination nodes
+    route_length = nx.shortest_path_length(
+        G,
+        source=origin_node,
+        target=destination_node,
+        weight="length",
+        method="dijkstra",
+    )
+
+    # Return the length of the shortest path, in km
+    return route_length / 1000
 
 
 def drive_distance_bing(origin, destination):
@@ -79,8 +106,6 @@ def get_distance(location1, location2, mode="haversine"):
     -------
     _type_
         _description_
-    """
-        """    
     """
     if mode == "haversine":
         return Haversine(location1[0], location1[1], location2[0], location2[1])
