@@ -1,7 +1,7 @@
 __author__ = "Guilherme Fernandes Alves"
 
 
-class analysis_lmr:
+class analysis:
     def __init__(self, name, routes):
         """_summary_
 
