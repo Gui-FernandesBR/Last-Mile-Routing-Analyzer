@@ -6,10 +6,25 @@ from .stop import stop
 
 
 class route:
-    def __init__(self, name):
+    def __init__(self, name, stops):
+        """_summary_
 
+        Parameters
+        ----------
+        name : string
+            The name of the route.
+        stops : list, dict
+            A list or dictionary containing the stops of the route. Each stop must be of type
+            stop. If dictionary, the keys must be the stop names and the values must be the
+            stop objects.
+
+        Returns
+        -------
+        None
+        """
         # Save arguments as attributes
         self.name = name
+        self.stops = stops
 
         # Initialize other attributes
         self.actual_sequence = []
@@ -20,9 +35,19 @@ class route:
         self.number_of_planned_stops = 0
         self.number_of_actual_stops = 0
 
+        # Calculate other attributes
+        if isinstance(stops, list):
+            self.stops_names = [x.name for x in self.stops]
+            self.number_of_stops = len(self.stops)
+        elif isinstance(stops, dict):
+            self.stops_names = list(self.stops.keys())
+            self.number_of_stops = len(self.stops_names)
+        else:
+            raise ValueError("Invalid stops: must be a list or dictionary of stops.")
+
         return None
 
-    def set_planned_sequence(self, sequence, mode="fast"):
+    def set_planned_sequence(self, sequence):
         """Set the planned sequence of the route. The planned sequence is the
         sequence of stops that the route is supposed to follow, usually
         determined by the route planner.
@@ -31,10 +56,6 @@ class route:
         ----------
         sequence : list
             A list containing the stops that the route is supposed to follow.
-        mode : str, optional
-            Define wether to check for types of sequence items or not, by default
-            "fast". The other option is "safe", which will check for types over
-            the entire sequence.
 
         Returns
         -------
@@ -46,16 +67,29 @@ class route:
             In case at least one of the items in the sequence is not of type
             stop.
         """
-        # TODO: Document here later
-        if mode == "safe":  # Other option if 'fast'
-            if all(isinstance(x, stop) for x in sequence):
-                self.sequence = sequence
-            else:
-                raise ValueError(
-                    "Invalid sequence: all elements must be of type vehicle."
-                )
+
+        # Can receive a list of stops or a list of stop names
+        if all(isinstance(x, stop) for x in sequence):
+            pass
+        elif all(isinstance(x, str) for x in sequence):
+            # sequence = [stop(x) for x in sequence]
+            pass
         else:
-            self.planned_sequence = sequence
+            raise ValueError(
+                "Invalid sequence: all elements must be of type stop or str."
+            )
+
+        # TODO: Check if the sequence is valid, save the sequence, evaluate characteristics
+
+        # if mode == "safe":  # Other option if 'fast'
+        #     if all(isinstance(x, stop) for x in sequence):
+        #         self.sequence = sequence
+        #     else:
+        #         raise ValueError(
+        #             "Invalid sequence: all elements must be of type vehicle."
+        #         )
+        # else:
+        #     self.planned_sequence = sequence
 
         self.planned_sequence_names = [x.name for x in self.planned_sequence]
         self.number_of_planned_stops = len(self.planned_sequence)
@@ -64,21 +98,21 @@ class route:
 
     def set_actual_sequence(self, sequence, mode="fast"):
 
-        if mode == "safe":  # Other option if "fast"
-            if all(isinstance(x, stop) for x in sequence):
-                self.sequence = sequence
-            else:
-                raise ValueError(
-                    "Invalid sequence: all elements must be of type vehicle."
-                )
-        else:
-            self.actual_sequence = sequence
+        # if mode == "safe":  # Other option if "fast"
+        #     if all(isinstance(x, stop) for x in sequence):
+        #         self.sequence = sequence
+        #     else:
+        #         raise ValueError(
+        #             "Invalid sequence: all elements must be of type vehicle."
+        #         )
+        # else:
+        #     self.actual_sequence = sequence
 
-        self.actual_sequence_names = [x.name for x in self.actual_sequence]
-        self.number_of_actual_stops = len(self.actual_sequence)
-        self.actual_sequence_compactness = self.evaluate_route_compactness(
-            self.actual_sequence
-        )
+        # self.actual_sequence_names = [x.name for x in self.actual_sequence]
+        # self.number_of_actual_stops = len(self.actual_sequence)
+        # self.actual_sequence_compactness = self.evaluate_route_compactness(
+        #     self.actual_sequence
+        # )
 
         return None
 
@@ -99,10 +133,19 @@ class route:
     def evaluate_circuity_factor(self, sequence):
         pass
 
+    def evaluate_street_orientation(self, sequence):
+        pass
+
     # @classmethod
     def evaluate_route_compactness(self, sequence):
         pass
         # return compactness
 
     def print_info(self):
+        pass
+
+    def plot_route(self, return_figure=False):
+        pass
+
+    def plot_stops(self, return_figure=False):
         pass
