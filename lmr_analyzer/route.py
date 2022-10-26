@@ -70,49 +70,56 @@ class route:
 
         # Can receive a list of stops or a list of stop names
         if all(isinstance(x, stop) for x in sequence):
-            pass
+            # In case the sequence is a list of stops
+            self.planned_sequence = sequence
         elif all(isinstance(x, str) for x in sequence):
-            # sequence = [stop(x) for x in sequence]
-            pass
+            # In case it receives a list of stop names
+            self.planned_sequence = [self.stops[x] for x in sequence]
         else:
             raise ValueError(
                 "Invalid sequence: all elements must be of type stop or str."
             )
 
-        # TODO: Check if the sequence is valid, save the sequence, evaluate characteristics
-
-        # if mode == "safe":  # Other option if 'fast'
-        #     if all(isinstance(x, stop) for x in sequence):
-        #         self.sequence = sequence
-        #     else:
-        #         raise ValueError(
-        #             "Invalid sequence: all elements must be of type vehicle."
-        #         )
-        # else:
-        #     self.planned_sequence = sequence
-
-        self.planned_sequence_names = [x.name for x in self.planned_sequence]
         self.number_of_planned_stops = len(self.planned_sequence)
+        self.planned_sequence_names = [x.name for x in self.planned_sequence]
 
         return None
 
-    def set_actual_sequence(self, sequence, mode="fast"):
+    def set_actual_sequence(self, sequence):
+        """Set the actual sequence of the route. The actual sequence is the
+        sequence of stops that the route actually followed. It can receive a
+        list of stops or a list of stop names.
 
-        # if mode == "safe":  # Other option if "fast"
-        #     if all(isinstance(x, stop) for x in sequence):
-        #         self.sequence = sequence
-        #     else:
-        #         raise ValueError(
-        #             "Invalid sequence: all elements must be of type vehicle."
-        #         )
-        # else:
-        #     self.actual_sequence = sequence
+        Parameters
+        ----------
+        sequence : list
+            A list containing the stops that the route actually followed. It can
+            receive a list of stops or a list of stop names.
 
-        # self.actual_sequence_names = [x.name for x in self.actual_sequence]
-        # self.number_of_actual_stops = len(self.actual_sequence)
-        # self.actual_sequence_compactness = self.evaluate_route_compactness(
-        #     self.actual_sequence
-        # )
+        Returns
+        -------
+        None
+
+        Raises
+        ------
+        ValueError
+            In case at least one of the items in the sequence is not of type
+            stop or str.
+        """
+        # Can receive a list of stops or a list of stop names
+        if all(isinstance(x, stop) for x in sequence):
+            # In case the sequence is a list of stops
+            self.actual_sequence = sequence
+        elif all(isinstance(x, str) for x in sequence):
+            # In case it receives a list of stop names
+            self.actual_sequence = [self.stops[x] for x in sequence]
+        else:
+            raise ValueError(
+                "Invalid sequence: all elements must be of type stop or str."
+            )
+
+        self.number_of_actual_stops = len(self.actual_sequence)
+        self.actual_sequence_names = [x.name for x in self.actual_sequence]
 
         return None
 
