@@ -11,7 +11,7 @@ class package:
             The name of the package.
         dimensions : tuple
             A tuple containing the dimensions of the package. The tuple must be
-            in the form (width, height, length).
+            in the form (depth, height, width).
         status : str
             The status of the package. The status must be one of the following:
             'to-be-delivered', 'rejected', 'attempted', 'delivered'.
@@ -69,4 +69,16 @@ class package:
         None
         """
         self.status = status
+        return None
+
+    def print_info(self):
+        """Prints the package information.
+
+        Returns
+        -------
+        None
+        """
+        print(
+            f"Package name: {self.name}\nDimensions: {self.dimensions}\nStatus: {self.status}\nWeight: {self.weight}\nPrice: {self.price}\nVolume: {self.volume}"
+        )
         return None
