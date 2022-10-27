@@ -223,3 +223,42 @@ def get_distance(location1, location2, mode="haversine"):
         raise ValueError(
             "Invalid mode, please choose one of the following: haversine, gmaps, osm, osmnx, bing"
         )
+
+
+# Auxiliary functions
+
+
+def get_city_state_names(location, session=None):
+    """Get the city and state names from a location. The location must be a
+    tuple with the coordinates (lat, lon). The method uses the nominatim API
+    from OpenStreetMaps.
+
+    Parameters
+    ----------
+    location : tuple
+        The coordinates of the location. The coordinates must be in the form (lat, lon).
+
+    Returns
+    -------
+    (city, state) : tuple
+        The city and state names of the location. Each parameter is a string.
+    """
+    lat, lon = location
+    url = (
+        f"https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={lat}&lon={lon}"
+    )
+    if session is None:
+        session = requests.Session()
+    r = session.get(url)
+    res = r.json()
+
+    try:
+        city = res["address"]["city"]
+    except:
+        city = res["address"]["county"]
+    state = res["address"]["state"]
+
+    return (city, state)
+
+
+# Main goal here is simple: keep the file organized and useful, and let's go then
