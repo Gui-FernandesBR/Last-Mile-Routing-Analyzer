@@ -134,25 +134,59 @@ class route:
         pass
 
     def evaluate_route_status(self):
-        pass
+        return None
+
+    def evaluate_route_scores(self):
+        return None
+
+    # Analyzing route stops
+
+    def count_stops_types(self):
+        return None
+
+    def evaluate_distance_to_stop_types(self):
+        return None
+
+    # Analyzing route times
+
+    def __calculate_route_times(self):
+        return None
+
+    # Analyzing route distances
 
     # @classmethod
     def evaluate_circuity_factor(self, sequence):
         pass
 
     def evaluate_street_orientation(self, sequence):
-        pass
+        return None
 
-    # @classmethod
+    # Analyzing routes shape and area
+
     def evaluate_route_compactness(self, sequence):
-        pass
-        # return compactness
+        return None
+
+    def evaluate_route_area(self):
+        return None
+
+    def evaluate_route_centroid(self, sequence):
+        return None
+
+    # Export and visualize route
 
     def print_info(self):
-        pass
+        return None
 
     def plot_route(self, return_figure=False):
-        pass
+        return None
 
     def plot_stops(self, return_figure=False):
-        pass
+        return None
+
+    @classmethod
+    def load_from_file(cls, filename):
+        return None
+
+    @classmethod
+    def save_to_file(self, filename):
+        return None
