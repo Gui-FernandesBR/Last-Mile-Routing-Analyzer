@@ -1,5 +1,7 @@
 __author__ = "Guilherme Fernandes Alves"
 
+from .package import package
+
 
 class stop:
     def __init__(
@@ -22,20 +24,29 @@ class stop:
             in the form (start_time, end_time).
         planned_service_time : float
             The planned service time of the stop.
-        packages : list # TODO: allow other formats
-            A list containing the packages to be delivered at the stop.
+        packages : list, dict
+            A list or a dictionary containing the packages to be delivered at the stop.
 
         Returns
         -------
         None
         """
         # Save arguments as attributes
-        self.name = name
-        self.location = location
-        self.location_type = location_type
-        self.time_window = time_window
-        self.packages = packages
-        self.planned_service_time = planned_service_time
+        (
+            self.name,
+            self.location,
+            self.location_type,
+            self.time_window,
+            self.packages,
+            self.planned_service_time,
+        ) = (
+            name,
+            location,
+            location_type,
+            time_window,
+            packages,
+            planned_service_time,
+        )
 
         # Check if time window is valid
         if time_window[0] > time_window[1]:
@@ -49,6 +60,16 @@ class stop:
             )
 
         # Evaluate other attributes
+        ## Create packages list
+        if isinstance(packages, dict):
+            self.packages_list = list(packages.values())
+        elif isinstance(packages, list) and all(
+            isinstance(pck, package) for pck in packages
+        ):
+            self.packages_list = packages
+        else:
+            raise TypeError("Invalid packages type: must be a list or a dictionary.")
+
         self.delivery_time = self.time_window[1] - self.time_window[0]
 
         return None
