@@ -22,11 +22,13 @@ class package:
         """
 
         # Save arguments as attributes
-        self.name = name
-        self.dimensions = dimensions
-        self.status = status
-        self.weight = weight
-        self.price = price
+        self.name, self.dimensions, self.status, self.weight, self.price = (
+            name,
+            dimensions,
+            status,
+            weight,
+            price,
+        )
 
         # Check if status is valid
         if status not in ["to-be-delivered", "rejected", "attempted", "delivered"]:
@@ -39,6 +41,7 @@ class package:
 
         return None
 
+    # TODO: Transform to a property
     def calculate_volume(self, dimensions):
         """Calculates the volume of the package, given its dimensions.
 
