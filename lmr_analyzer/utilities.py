@@ -140,6 +140,10 @@ def drive_distance_osmnx(origin, destination):
     route_length: float
         The length of the shortest path between the origin and destination points.
     """
+    # TODO: in the end, allow receiving stop objects
+
+    if not isinstance(origin, tuple) or not isinstance(destination, tuple):
+        raise TypeError("The origin and destination must be tuple types.")
 
     # Define the bounding box of the area of interest
     north = max(origin[0], destination[0])
