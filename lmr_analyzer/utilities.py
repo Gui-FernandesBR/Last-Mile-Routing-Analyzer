@@ -25,7 +25,60 @@ def Haversine(lat1, lon1, lat2, lon2):
     return km
 
 
-def drive_distance_gmaps(origin, destination):
+def drive_distance_gmaps(origin, destination, api_key):
+    """Calculate the driving distance between two points using Google Maps API.
+    Internet connection is required. The Google Maps API key must be passed.
+
+
+    Parameters
+    ----------
+    origin : tuple
+        The origin point coordinates. The coordinates must be in the form (lat, lon).
+    destination : tuple
+        The destination point coordinates. The coordinates must be in the form (lat, lon).
+    api_key : string
+        The Google Maps API key. It can be obtained at
+        https://developers.google.com/maps/documentation/directions/get-api-key
+        and it is free, but it has a daily limit of 2500 requests and, of course,
+        it is limited to 1 person only.
+
+    Returns
+    -------
+    (distance, durante) : tuple
+        The distance and duration of the shortest path between the origin and destination points.
+    """
+    # TODO: Test!
+
+    # Create the coordinates string
+    origin_coordinates = "{},{}".format(origin[0], origin[1])
+    destination_coordinates = "{},{}".format(destination[0], destination[1])
+
+    # Create the request URL
+    url = "https://maps.googleapis.com/maps/api/directions/json?origin={}&destination={}&key={}".format(
+        origin_coordinates, destination_coordinates, api_key
+    )
+
+    # Make the request
+    response = requests.get(url)
+
+    # Check if the request was successful
+    if response.status_code != 200:
+        raise Exception("Request failed")
+
+    # Get the response
+    data = response.json()
+
+    # Check if the request was successful
+    if data["status"] != "OK":
+        raise Exception("Request failed")
+
+    # Get the distance and duration
+    distance = data["routes"][0]["legs"][0]["distance"]["value"] / 1000
+    duration = data["routes"][0]["legs"][0]["duration"]["value"] / 60
+
+    return (distance, duration)
+
+
 
     # TODO: parametrize key
     gmaps = googlemaps.Client(key="AIzaSyC9B4JfZMhjWd4v4q4kz1G6eY0l0j8KfYU")
