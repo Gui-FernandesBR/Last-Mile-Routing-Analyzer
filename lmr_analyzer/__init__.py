@@ -1,3 +1,5 @@
+__author__ = "Guilherme Fernandes Alves"
+
 from .amz_serializer import amz_serializer
 from .analysis import analysis
 from .geometry import geometry
