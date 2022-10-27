@@ -248,8 +248,12 @@ class amz_serializer:
         ## Store variables as attributes
         self.packages_dict = packages_dict
         self.total_packages = total_packages
-        pck_time = time.time() - start
-        print("package_data.json has been loaded in {:.2f} seconds.".format(pck_time))
+        pck_time = time.time()
+        print(
+            "package_data.json has been loaded in {:.2f} seconds.".format(
+                pck_time - start
+            )
+        )
 
         # Read the route data
         with open(
@@ -267,8 +271,12 @@ class amz_serializer:
 
         ## Store variables as attributes
         self.total_routes = len(self.routes_dict)
-        route_time = time.time() - pck_time
-        print("route_data.json has been loaded in {:.2f} seconds.".format(route_time))
+        route_time = time.time()
+        print(
+            "route_data.json has been loaded in {:.2f} seconds.".format(
+                route_time - pck_time
+            )
+        )
 
         # Read the actual sequences
         with open(
@@ -286,10 +294,10 @@ class amz_serializer:
         ## Modify each route in the routes_dict to include the actual sequence
         for route in routes_dict.values():
             route.set_actual_sequence(ac_sequences_dict[route.name])
-        ac_sequence = time.time() - route_time
+        ac_sequence_time = time.time()
         print(
             "actual_sequences.json has been loaded in {:.2f} seconds.".format(
-                ac_sequence
+                ac_sequence_time - route_time
             )
         )
 
