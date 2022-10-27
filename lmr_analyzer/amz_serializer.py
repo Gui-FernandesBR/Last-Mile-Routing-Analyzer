@@ -160,7 +160,22 @@ class amz_serializer:
         return routes_dict
 
     def serialize_actual_sequences(actual_sequences):
+        """Serializes the actual sequences into a dictionary. The dictionary
+        can be used to create a new route object for each route present in the
+        actual_sequences.
 
+        Parameters
+        ----------
+        actual_sequences : dict
+            A dictionary containing the actual sequences to be serialized. The
+            dictionary must be in the form ...
+
+        Returns
+        -------
+        dict
+            A dictionary containing the serialized actual sequences. The
+            dictionary is in the form ...
+        """
         for route_id, route_dict in actual_sequences.items():
             if isinstance(route_dict, list):
                 continue
@@ -174,4 +189,13 @@ class amz_serializer:
         return actual_sequences
 
     def serialize_travel_times(travel_times):
-        pass
+        return None
+
+    def serialize_all(root_directory):
+        """Serializes all the files in the root directory."""
+        # package_data
+        # route_data
+        # actual_sequences
+        # travel_times
+
+        return None
