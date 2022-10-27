@@ -71,5 +71,62 @@ class stop:
             raise TypeError("Invalid packages type: must be a list or a dictionary.")
 
         self.delivery_time = self.time_window[1] - self.time_window[0]
+        self.__process_packages()
+
+        return None
+
+    def __process_packages(self):
+        """Processes the packages of the stop. Counts the number of packages
+        and the total volume of the packages.
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        None
+        """
+        # Count the number of packages
+        self.number_of_packages = len(self.packages)
+
+        # Count the number of packages by status
+        status_list = [package.status for package in self.packages_list]
+        self.number_of_delivered_packages = status_list.count("delivered")
+        self.number_of_rejected_packages = status_list.count("rejected")
+        self.number_of_attempted_packages = status_list.count("attempted")
+        self.number_of_to_be_delivered_packages = status_list.count("to-be-delivered")
+
+        # Count the total volume of the packages
+        volume_list = [package.volume for package in self.packages_list]
+        self.total_volume_of_packages = sum(volume_list)
+        self.average_volume_of_packages = (
+            sum(volume_list) / len(volume_list) if len(volume_list) > 0 else 0
+        )
+
+        # Count the total volume of the packages by status
+        self.total_volume_of_delivered_packages = [
+            package.volume
+            for package in self.packages_list
+            if package.status == "delivered"
+        ]
+        self.total_volume_of_rejected_packages = [
+            package.volume
+            for package in self.packages_list
+            if package.status == "rejected"
+        ]
+        self.total_volume_of_attempted_packages = [
+            package.volume
+            for package in self.packages_list
+            if package.status == "attempted"
+        ]
+        self.total_volume_of_to_be_delivered_packages = [
+            package.volume
+            for package in self.packages_list
+            if package.status == "to-be-delivered"
+        ]
+
+        # TODO: Count the total weight of the packages
+        # TODO: Count the total price of the packages
 
         return None
