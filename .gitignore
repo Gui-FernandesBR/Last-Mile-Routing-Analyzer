@@ -42,3 +42,6 @@ venv/
 venv2/
 .vrp_gui/
 .venv_thesis
+
+# OSM caches
+cache
