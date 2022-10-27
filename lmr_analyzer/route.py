@@ -154,9 +154,52 @@ class route:
 
     # Analyzing route distances
 
-    # @classmethod
-    def evaluate_circuity_factor(self, sequence):
-        pass
+    def evaluate_circuity_factor(self, planned=True, actual=True):
+        """Evaluate the circuity factor of the route.
+
+        Parameters
+        ----------
+        actual: bool
+            If True, it evaluates the circuity factor of the actual sequence.
+        planned: bool
+            If True, it evaluates the circuity factor of the planned sequence.
+
+        Returns
+        -------
+        None
+        """
+        if planned:
+            # Calculate the circuity factor of the planned sequence avoiding the
+            # division by zero
+            self.planned_circuity_factors = [
+                x / y if y != 0 else 0
+                for x, y in zip(
+                    self.planned_driving_distances, self.planned_euclidean_distances
+                )
+            ]
+            self.mean_planned_circuity_factor = np.mean(self.planned_circuity_factors)
+            self.total_planned_circuity_factor = (
+                self.total_planned_driving_distance
+                / self.total_planned_euclidean_distance
+            )
+        if actual:
+            # Calculate the circuity factor of the actual sequence avoiding the
+            # division by zero
+            self.actual_circuity_factors = [
+                x / y if y != 0 else 0
+                for x, y in zip(
+                    self.actual_driving_distances, self.actual_euclidean_distances
+                )
+            ]
+            self.mean_actual_circuity_factor = np.mean(self.actual_circuity_factors)
+            self.total_actual_circuity_factor = (
+                self.total_actual_driving_distance
+                / self.total_actual_euclidean_distance
+            )
+
+        return None
+
+    # Analyzing routes orientation
 
     def evaluate_street_orientation(self, sequence):
         return None
