@@ -186,32 +186,40 @@ def drive_distance_bing(origin, destination):
 
 
 def get_distance(location1, location2, mode="haversine"):
-    """_summary_
+    """Calculate the distance between two points. It supports five different
+    distance calculation methods: "haversine", "gmaps", "osm", "osmnx" and "bing".
+    Some of these methods were not extensively tested, so use them with caution.
 
     Parameters
     ----------
-    location1 : _type_
-        _description_
-    location2 : _type_
-        _description_
+    location1 : tuple
+        The coordinates of the first location. The coordinates must be in the form (lat, lon).
+    location2 : tuple
+        The coordinates of the second location. The coordinates must be in the form (lat, lon).
     mode : string
         Distance calculation mode. The mode must be one of the following:
         'haversine', 'gmaps', 'osmnx', 'bing'.
 
     Returns
     -------
-    _type_
-        _description_
+    (distance, duration): tuple
+        The distance and duration of the path between the origin and destination
+        points. The distance is in kilometers and the duration is in minutes.
+        The duration is only available for the 'gmaps', 'osm', and 'bing' modes.
+        Otherwise, the duration is set to None.
+
     """
     if mode == "haversine":
-        return Haversine(location1[0], location1[1], location2[0], location2[1])
+        return (Haversine(location1[0], location1[1], location2[0], location2[1]), 0)
+    elif mode == "osm":
+        return drive_distance_osm(location1, location2)
+    elif mode == "osmnx":
+        return (drive_distance_osmnx(location1, location2), 0)
     elif mode == "gmaps":
         return drive_distance_gmaps(location1, location2)
-    elif mode == "osmnx":
-        return drive_distance_osmnx(location1, location2)
     elif mode == "bing":
         return drive_distance_bing(location1, location2)
     else:
         raise ValueError(
-            "Invalid mode, please choose one of the following: haversine, gmaps, osmnx, bing"
+            "Invalid mode, please choose one of the following: haversine, gmaps, osm, osmnx, bing"
         )
