@@ -1,12 +1,18 @@
 __author__ = "Guilherme Fernandes Alves"
 
+from multiprocessing import Pool
+
+import numpy as np
+
 from .stop import stop
+from .utilities import get_distance
+import requests
 
-# from .vehicle import vehicle
+session = requests.Session()
 
-
+# TODO: Need to test the FC evaluation function
 class route:
-    def __init__(self, name, stops):
+    def __init__(self, name, stops, departure_time=None, vehicle=None):
         """_summary_
 
         Parameters
@@ -23,27 +29,28 @@ class route:
         None
         """
         # Save arguments as attributes
-        self.name = name
-        self.stops = stops
-
-        # Initialize other attributes
-        self.actual_sequence = []
-        self.actual_sequence_names = []
-        self.planned_sequence = []
-        self.planned_sequence_names = []
-        self.vehicle = None
-        self.number_of_planned_stops = 0
-        self.number_of_actual_stops = 0
+        self.name, self.stops, self.departure_time, self.vehicle = (
+            name,
+            stops,
+            departure_time,
+            vehicle,
+        )
 
         # Calculate other attributes
         if isinstance(stops, list):
             self.stops_names = [x.name for x in self.stops]
             self.number_of_stops = len(self.stops)
+            self.stops = {x.name: x for x in self.stops}
         elif isinstance(stops, dict):
             self.stops_names = list(self.stops.keys())
             self.number_of_stops = len(self.stops_names)
         else:
             raise ValueError("Invalid stops: must be a list or dictionary of stops.")
+
+        # Calculate the number of unique stops, i.e., the number of stops that
+        # are not repeated in the route
+        self.unique_stops = list(set(self.stops_names))
+        self.number_of_unique_stops = len(self.unique_stops)
 
         return None
 
