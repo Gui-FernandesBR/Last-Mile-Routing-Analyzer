@@ -154,6 +154,116 @@ class route:
 
     # Analyzing route distances
 
+    def __calculate_driving_distances(
+        self, sequence, name, mode="osm", multiprocessing=False
+    ):
+
+        session = requests.Session()
+        # First check if the sequence is empty
+        if len(sequence) == 0:
+            raise ValueError(
+                "Sequence is empty. Try to run evaluate_driving_distances method first."
+            )
+
+        # Create a list of distances between the stops
+        if not multiprocessing:
+            osm_distances = []
+            for i in range(len(sequence) - 1):
+                location1 = sequence[i]
+                location2 = sequence[i + 1]
+                driving_distance = get_distance(
+                    location1, location2, mode="osm", session=session
+                )
+                osm_distances.append(driving_distance)
+            # Add the distance between the last stop and the first stop
+            final_distance = get_distance(
+                sequence[-1],
+                sequence[0],
+                mode="osm",
+            )
+            osm_distances.append(final_distance)
+
+        else:
+            p = Pool(processes=4)
+            p.starmap(
+                get_distance,
+                zip(
+                    sequence[:-1],
+                    sequence[1:],
+                    [mode] * (len(sequence) - 1),
+                    [session] * (len(sequence) - 1),
+                ),
+            )
+            p.close()
+            osm_distances = p.join()
+            final_distance = get_distance(
+                sequence[-1],
+                sequence[0],
+                mode="osm",
+                session=session,
+            )
+            osm_distances.append(final_distance)
+
+            # with Pool(processes=4) as p:
+            #     osm_distances = p.starmap(
+            #         get_distance,
+            #         zip(
+            #             sequence[:-1],
+            #             sequence[1:],
+            #             [mode] * (len(sequence) - 1),
+            #         ),
+            #         # chunksize=10,
+            #     )
+            osm_distances.append(get_distance(sequence[-1], sequence[0], mode=mode))
+        distances_km = [x[0] for x in osm_distances]
+        durations_min = [x[1] for x in osm_distances]
+
+        self.__setattr__(name, distances_km)
+        return None
+
+    def evaluate_driving_distances(
+        self, planned=True, actual=True, mode="osm", multiprocessing=False
+    ):
+        """Evaluate the driving distances between the stops of the route.
+        It assumes that after the last stop the vehicle returns to the first
+        stop. It creates a list of distances between the stops and save it as
+        an attribute of the route.
+
+        Parameters
+        ----------
+        actual: bool
+            If True, it evaluates the driving distances between the stops of
+            the actual sequence.
+        planned: bool
+            If True, it evaluates the driving distances between the stops of
+            the planned sequence.
+        mode: str, optional
+            The mode to be used to calculate the driving distances. It can be
+            either "osmnx" or ...
+
+        Returns
+        -------
+        None
+        """
+        if planned:
+            self.__calculate_driving_distances(
+                [x.location for x in self.planned_sequence],
+                "planned_driving_distances",
+                mode,
+                multiprocessing,
+            )
+            self.total_planned_driving_distance = sum(self.planned_driving_distances)
+        if actual:
+            self.__calculate_driving_distances(
+                [x.location for x in self.actual_sequence],
+                "actual_driving_distances",
+                mode,
+                multiprocessing,
+            )
+            self.total_actual_driving_distance = sum(self.actual_driving_distances)
+
+        return None
+
     def evaluate_circuity_factor(self, planned=True, actual=True):
         """Evaluate the circuity factor of the route.
 
