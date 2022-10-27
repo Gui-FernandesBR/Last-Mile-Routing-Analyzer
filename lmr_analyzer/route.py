@@ -127,13 +127,43 @@ class route:
         self.vehicle = vehicle
         return None
 
-    def get_vehicle(self):
-        return self.vehicle
+    # Analyzing route quality
 
     def evaluate_sequence_adherence(self):
-        pass
+        if not (self.number_of_actual_stops and self.number_of_planned_stops):
+            raise ValueError("Actual and planned sequences must be set.")
+
+        return None
 
     def evaluate_route_status(self):
+
+        route_status = {
+            "avg_packages_per_stop": 0,
+            "number_of_packages": 0,
+            "number_of_delivery_stops": 0,
+            "number_of_delivered_packages": 0,
+            "number_of_rejected_packages": 0,
+            "number_of_attempted_packages": 0,
+        }
+
+        # Fill the route status dictionary
+        route_status["number_of_delivery_stops"] = self.number_of_stops
+        for stop in self.stops.values():
+            route_status["number_of_packages"] += stop.number_of_packages
+            route_status[
+                "number_of_delivered_packages"
+            ] += stop.number_of_delivered_packages
+            route_status[
+                "number_of_rejected_packages"
+            ] += stop.number_of_rejected_packages
+            route_status[
+                "number_of_attempted_packages"
+            ] += stop.number_of_attempted_packages
+        route_status["avg_packages_per_stop"] = (
+            route_status["number_of_packages"] / self.number_of_stops
+        )
+
+        self.route_status = route_status
         return None
 
     def evaluate_route_scores(self):
