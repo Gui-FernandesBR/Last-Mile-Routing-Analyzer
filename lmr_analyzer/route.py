@@ -154,6 +154,84 @@ class route:
 
     # Analyzing route distances
 
+    def __calculate_euclidean_distances(self, sequence, name):
+        """Evaluate the euclidean distances between the stops of the route.
+        It assumes that after the last stop the vehicle returns to the first
+        stop. It creates a list of distances between the stops and save it as
+        an attribute of the route. The name argument defines the name of the
+        attribute that will be created.
+
+        Parameters
+        ----------
+        sequence : list
+            A list containing the stops of the route.
+        name : str
+            The name of the attribute that will be created at the end.
+        Returns
+        -------
+        None
+        """
+        # TODO: Add a multiprocessing option
+
+        if len(sequence) == 0:
+            raise ValueError(
+                "Sequence is empty. Try to run evaluate_euclidean_distances method first."
+            )
+
+        # Create a list of distances between the stops
+        distances = []
+        for i in range(len(sequence) - 1):
+            location1 = sequence[i].location
+            location2 = sequence[i + 1].location
+            haversine = get_distance(location1, location2, mode="haversine")
+            distances.append(haversine[0])
+        # Add the distance between the last stop and the first stop
+        final_distance = get_distance(
+            sequence[-1].location,
+            sequence[0].location,
+            mode="haversine",
+        )
+        distances.append(final_distance[0])
+
+        # Save the distances as an attribute of the route
+        self.__setattr__(name, distances)
+
+        return None
+
+    def evaluate_euclidean_distances(self, planned=True, actual=True):
+        """Evaluate the euclidean distances between the stops of the route.
+        It assumes that after the last stop the vehicle returns to the first
+        stop. It creates a list of distances between the stops and save it as
+        an attribute of the route.
+
+        Parameters
+        ----------
+        actual: bool
+            If True, it evaluates the euclidean distances between the stops of
+            the actual sequence.
+        planned: bool
+            If True, it evaluates the euclidean distances between the stops of
+            the planned sequence.
+
+        Returns
+        -------
+        None
+        """
+        if planned:
+            self.__calculate_euclidean_distances(
+                self.planned_sequence, "planned_euclidean_distances"
+            )
+            self.total_planned_euclidean_distance = sum(
+                self.planned_euclidean_distances
+            )
+        if actual:
+            self.__calculate_euclidean_distances(
+                self.actual_sequence, "actual_euclidean_distances"
+            )
+            self.total_actual_euclidean_distance = sum(self.actual_euclidean_distances)
+
+        return None
+
     def __calculate_driving_distances(
         self, sequence, name, mode="osm", multiprocessing=False
     ):
