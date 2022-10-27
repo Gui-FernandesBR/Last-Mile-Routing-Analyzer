@@ -79,11 +79,50 @@ def drive_distance_gmaps(origin, destination, api_key):
     return (distance, duration)
 
 
+def drive_distance_osm(origin, destination):
+    """Calculate the driving distance between two points using OSM API.
+    Internet connection is required.
 
-    # TODO: parametrize key
-    gmaps = googlemaps.Client(key="AIzaSyC9B4JfZMhjWd4v4q4kz1G6eY0l0j8KfYU")
-    directions_result = gmaps.directions(origin, destination, mode="driving")
-    return directions_result[0]["legs"][0]["distance"]["value"]
+    Parameters
+    ----------
+    origin : tuple
+        The origin point coordinates. The coordinates must be in the form (lat, lon).
+    destination : tuple
+        The destination point coordinates. The coordinates must be in the form (lat, lon).
+
+    Returns
+    -------
+    (distance, durante) : tuple
+        The distance and duration of the shortest path between the origin and destination points.
+        The distance is in meters and the duration is in minutes.
+    """
+
+    # Create the coordinates string
+    coordinates = "{},{};{},{}".format(
+        origin[1], origin[0], destination[1], destination[0]
+    )  # lon1, lat1, lon2, lat2
+
+    # Get the driving distance from the OpenStreetMaps API
+    url = "http://router.project-osrm.org/route/v1/driving/{}".format(coordinates)
+    r = requests.get(url)
+    res = r.json()
+
+    # Check if the route was properly found, raise an error if not
+    if res["code"] != "Ok":
+        warnings.warn(
+            "OSM API returned an {} error when calculating the following distance: from {} to {}".format(
+                res["code"], origin, destination
+            )
+        )
+
+    # Get the route length and duration and convert to km and minutes, respectively
+    duration = res["routes"][0]["duration"] / 60  # in minutes
+    distance = res["routes"][0]["distance"] / 1000  # in km
+    # geometry = polyline.decode(res["routes"][0]["geometry"])
+
+    # Return a tuple with the route length and duration
+    print(distance)
+    return (distance, duration)
 
 
 def drive_distance_osmnx(origin, destination):
