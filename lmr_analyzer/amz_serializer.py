@@ -1,11 +1,17 @@
 __author__ = "Guilherme Fernandes Alves"
 
+import copy
+import json
+import time
+from datetime import datetime
+
+import numpy as np
+import pytz
+
 from .package import package as package_class
 from .route import route as route_class
 from .stop import stop as stop_class
 from .vehicle import vehicle as vehicle_class
-from datetime import datetime
-import pytz
 
 
 class amz_serializer:
@@ -13,10 +19,26 @@ class amz_serializer:
     Amazon data into a format that can be used by the LMR algorithm.
     """
 
-    def __init__(self):
+    def __init__(self, root_directory=None):
+        """Initializes the serializer.
+
+        Parameters
+        ----------
+        root_directory : str
+            The root directory of the database.
+
+        Returns
+        -------
+        None
+        """
+        # TODO: Special case for missing files
+        # TODO: Check contents on the directory before loading the data
+
+        self.serialize_all(root_directory)
+
         return None
 
-    def serialize_package(packages_dict):
+    def serialize_package(self, packages_dict):
         """Serializes a package object into a dictionary. The dictionary can be
         used to create a new package object for each package present in the
         packages_dict.
@@ -83,7 +105,7 @@ class amz_serializer:
 
         return packages_dict
 
-    def serialize_route(routes_dict, packages_dict):
+    def serialize_route(self, routes_dict, packages_dict):
         """Serializes a route object into a dictionary. The dictionary can be
         used to create a new route object for each route present in the
         routes_dict.
@@ -159,7 +181,7 @@ class amz_serializer:
 
         return routes_dict
 
-    def serialize_actual_sequences(actual_sequences):
+    def serialize_actual_sequences(self, actual_sequences):
         """Serializes the actual sequences into a dictionary. The dictionary
         can be used to create a new route object for each route present in the
         actual_sequences.
@@ -188,14 +210,129 @@ class amz_serializer:
 
         return actual_sequences
 
-    def serialize_travel_times(travel_times):
+    def serialize_travel_times(self, travel_times):
         return None
 
-    def serialize_all(root_directory):
-        """Serializes all the files in the root directory."""
-        # package_data
-        # route_data
-        # actual_sequences
-        # travel_times
+    def serialize_all(self, root_directory):
+        """Serializes all the files in the root directory.
+
+        Parameters
+        ----------
+        root_directory : str
+            The root directory containing the files to be serialized.
+
+        Returns
+        -------
+        None
+        """
+        start = time.time()
+
+        # Read the package data
+        with open(
+            f"{root_directory}/package_data.json",
+            "r",
+        ) as outfile:
+            db_package = json.load(outfile)
+        outfile.close()
+        packages_dict = db_package.copy()
+
+        ## Serialize the package data
+        packages_dict = self.serialize_package(packages_dict=packages_dict)
+
+        ## Calculate the total number of packages
+        total_packages = 0
+        for x in packages_dict.keys():
+            for y in packages_dict[x].keys():
+                total_packages += len(packages_dict[x][y])
+
+        ## Store variables as attributes
+        self.packages_dict = packages_dict
+        self.total_packages = total_packages
+        pck_time = time.time() - start
+        print("package_data.json has been loaded in {:.2f} seconds.".format(pck_time))
+
+        # Read the route data
+        with open(
+            f"{root_directory}/route_data.json",
+            "r",
+        ) as outfile:
+            db_route = json.load(outfile)
+        outfile.close()
+        routes_dict = db_route.copy()
+
+        ## Serialize the route data
+        self.routes_dict = self.serialize_route(
+            routes_dict=routes_dict, packages_dict=packages_dict
+        )
+
+        ## Store variables as attributes
+        self.total_routes = len(self.routes_dict)
+        route_time = time.time() - pck_time
+        print("route_data.json has been loaded in {:.2f} seconds.".format(route_time))
+
+        # Read the actual sequences
+        with open(
+            f"{root_directory}/actual_sequences.json",
+            "r",
+        ) as outfile:
+            db_ac_sequences = json.load(outfile)
+        outfile.close()
+        ac_sequences_dict = db_ac_sequences.copy()
+
+        ## Serialize the actual sequences
+        ac_sequences_dict = self.serialize_actual_sequences(
+            actual_sequences=ac_sequences_dict
+        )
+        ## Modify each route in the routes_dict to include the actual sequence
+        for route in routes_dict.values():
+            route.set_actual_sequence(ac_sequences_dict[route.name])
+        ac_sequence = time.time() - route_time
+        print(
+            "actual_sequences.json has been loaded in {:.2f} seconds.".format(
+                ac_sequence
+            )
+        )
+
+        # Read the travel times data
+        # TODO: Implement this
+
+        print(
+            "We are ready to proceed. All files have been loaded in {:.2f} seconds.".format(
+                time.time() - start
+            )
+        )
+
+        return None
+
+    def print_info(self):
+        """Prints the information about the loaded database.
+
+        Returns
+        -------
+        None
+        """
+
+        # Package Data
+        print(
+            f"A total of {self.total_packages} packages were loaded from: package_data.json"
+        )
+        print(
+            f"  (...it considers total of {np.sum([len(self.packages_dict[x]) for x in self.packages_dict.keys()])} deliveries)"
+        )
+        print(
+            f"    (...which represents a total of {len(self.packages_dict.keys())} routes"
+        )
+
+        # Route Data
+        print(
+            f"A total of {len(self.routes_dict)} routes were loaded from route_data.json"
+        )
+
+        # Actual Sequences
+        print(
+            "The actual sequence of {} routes were loaded".format(
+                len(self.ac_sequences_dict)
+            )
+        )
 
         return None
