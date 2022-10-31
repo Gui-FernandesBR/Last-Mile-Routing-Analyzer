@@ -6,13 +6,26 @@ import geopandas as gpd
 
 
 class geometry:
-    def __init__(self, shapefile=None, bbox=None):
-        """_summary_
+    """
+    This class is responsible for handling the geometry of the analysis.
+
+    """
+
+    def __init__(self, name, place=None, shapefile=None, bbox=None):
+        """Initialize the geometry class.
 
         Parameters
         ----------
+        name : str
+            Name of the geometry.
+        place : str, optional
+            The name of the place to be analyzed. The default is None. If the
+            place is not None, the shapefile and bbox parameters will be ignored.
         shapefile : str
-            The path to the shapefile.
+            The path to the shapefile. This should point to the .shp file. If
+            used with the place parameter, the place parameter will be ignored.
+            If used with the bbox parameter, the bbox parameter will be used to
+            cut the shapefile. The default is None.
         bbox : list, optional
             The bounding box of the geometry. [north, south, east, west]
             North and south are the latitude, east and west are the longitude
@@ -22,12 +35,27 @@ class geometry:
         -------
         None
         """
-        # Save arguments as attributes
-        self.shapefile = shapefile
-        self.bbox = bbox
 
-        # Initialize other attributes
-        self.geometry = None
+        # Save arguments as attributes
+        self.name = name
+        self.place, self.shapefile, self.bbox = (place, shapefile, bbox)
+
+        # Create the major graph
+        if place is not None:
+            self.__create_graph_from_place()
+        else:
+            if bbox and not shapefile:
+                self.__create_graph_from_bbox()
+            elif shapefile:
+                self.__create_graphs_from_shapefile()
+                if bbox:
+                    self.__cut_graph_to_bbox()
+            else:
+                raise ValueError(
+                    "You must provide either a shapefile, place query or a bounding box, otherwise there is no way to create the geometry."
+                )
+
+        return None
 
     # Create graph methods
 
