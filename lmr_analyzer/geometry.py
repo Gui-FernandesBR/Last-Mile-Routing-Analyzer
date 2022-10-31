@@ -428,5 +428,47 @@ class geometry:
     def attribute_table(self):
         return None
 
-    def plot_geometry(self):
+    # Pickle object to save time in the future
+
+    def save(self, filename="geometry"):
+        """Save the geometry object to a file so it can be used later.
+
+        Parameters
+        ----------
+        filename : str, optional
+            Name of the file where to be saved, by default "geometry"
+        Returns
+        -------
+        None
+        """
+        # Save the object using cloudpickle
+        pickled_obj = cloudpickle.dumps(object)
+
+        # Save the pickled route dict into a file
+        with open(filename, "wb") as f:
+            f.write(pickled_obj)
+        print("Your geometry object was saved, check it out: " + filename)
+
         return None
+
+    @classmethod
+    def load(self, filename="geometry"):
+        """Load a previously saved geometry pickled file.
+        Example: city = geometry.load("filename").
+
+        Parameters
+        ----------
+        filename : str, optional
+            Name of the previous saved file, by default "geometry"
+        Returns
+        -------
+        lmr_analyzer.geometry object
+        """
+        # Load the pickled object
+        with open(filename, "rb") as f:
+            pickled_obj = f.read()
+
+        # Unpickle the object
+        obj = cloudpickle.loads(pickled_obj)
+
+        return obj
