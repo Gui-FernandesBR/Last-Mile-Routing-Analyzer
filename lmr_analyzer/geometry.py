@@ -402,7 +402,27 @@ class geometry:
     def add_layer(self, layer):
         return None
 
-    def plot_layer(self, layer):
+    # Export methods
+
+    def save_graphs_to_shapefile(self, path):
+        """_summary_
+
+        Parameters
+        ----------
+        graphs : list, dict, or osmnx.graph
+            Can be a list of graphs, a dictionary of graphs, or a single graph.
+        path : str
+            The path to save the shapefile. This should not include the file format.
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+
+        for key, value in self.graphs.items():
+            ox.save_graph_shapefile(value, filename=path + f"_{key}")
+
         return None
 
     def attribute_table(self):
