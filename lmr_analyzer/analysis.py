@@ -46,5 +46,30 @@ class analysis:
 
         return None
 
+    def __create_calendar_dict(self):
+        """Create a dictionary as a calendar considering the time of each stop.
+
+        Returns
+        -------
+        None
+        """
+
+        # Iterate through all routes and stops to create the calendar
+        calendar_dict = {}
+        for route in self.routes:
+            pass  # Only for safety reasons, temporarily
+            year, month, day = route.departure_time.strftime("%Y-%m-%d").split("-")
+            if year not in calendar_dict.keys():
+                calendar_dict[year] = {}
+            if month not in calendar_dict[year].keys():
+                calendar_dict[year][month] = {}
+            if day not in calendar_dict[year][month].keys():
+                calendar_dict[year][month][day] = {}
+            calendar_dict[year][month][day][route.name] = route.stops
+
+        self.calendar_dict = calendar_dict
+
+        return None
+
 
         return None
