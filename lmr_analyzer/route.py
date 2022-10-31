@@ -413,7 +413,7 @@ class route:
             # Calculate the circuity factor of the actual sequence avoiding the
             # division by zero
             self.actual_circuity_factors = [
-                x / y if y != 0 else 0
+                x / y if y != 0 else 1
                 for x, y in zip(
                     self.actual_driving_distances, self.actual_euclidean_distances
                 )
@@ -422,6 +422,9 @@ class route:
             self.total_actual_circuity_factor = (
                 self.total_actual_driving_distance
                 / self.total_actual_euclidean_distance
+            )
+            self.avg_circuity_factor_actual = np.average(
+                self.actual_circuity_factors,
             )
 
         return None
