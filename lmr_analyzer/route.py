@@ -173,6 +173,23 @@ class route:
         )
 
         self.route_status = route_status
+        self.number_of_packages = route_status["number_of_packages"]
+        self.number_of_delivery_stops = route_status["number_of_delivery_stops"]
+        self.number_of_delivered_packages = route_status["number_of_delivered_packages"]
+        self.number_of_rejected_packages = route_status["number_of_rejected_packages"]
+        self.number_of_attempted_packages = route_status["number_of_attempted_packages"]
+        self.avg_packages_per_stop = route_status["avg_packages_per_stop"]
+
+        self.rejected_packages_percentage = (
+            self.number_of_rejected_packages / self.number_of_packages
+        )
+        self.delivered_packages_percentage = (
+            self.number_of_delivered_packages / self.number_of_packages
+        )
+        self.attempted_packages_percentage = (
+            self.number_of_attempted_packages / self.number_of_packages
+        )
+
         return None
 
     def evaluate_route_scores(self):
