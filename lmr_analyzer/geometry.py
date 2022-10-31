@@ -203,31 +203,109 @@ class geometry:
 
         # simply plot our graph
 
-        # ox.plot_graph(self.geometry,
-        #       ax=None,
-        #       figsize=(20, 20),
-        #       bgcolor='#111111',
-        #       node_color='w',
-        #       node_size=0,
-        #       node_alpha=None,
-        #       node_edgecolor='none',
-        #       node_zorder=1,
-        #       edge_color='#999999',
-        #       edge_linewidth=1,
-        #       edge_alpha=None,
-        #       show=True,
-        #       close=False,
-        #       save=False,
-        #       filepath=None,
-        #       dpi=600,
-        #       bbox=None)
+    # Plot methods
 
-        # ox.stats.basic_stats(self.geometry,
-        #              area=None,
-        #              clean_int_tol=None,
-        #              clean_intersects=None,
-        #              tolerance=None,
-        #              circuity_dist=None)
+    def plot_attribute_table(self, x="name", y=None, kind="scatter", color="red"):
+        """Plot the attribute table.
+
+        Returns
+        -------
+        None
+        """
+        if self.attribute_table is None:
+            raise ValueError(
+                "The attribute table is empty, Please run the method 'evaluate_basic_stats' first."
+            )
+
+        # if x == "name":
+        #     self.attribute_table.sort_values(y, ascending=False)
+        # elif y == "name":
+        #     self.attribute_table.sort_values(x, ascending=False)
+
+        return self.attribute_table.plot(kind=kind, x=x, y=x, color=color)
+
+    def plot_graphs(self, grid=True):
+
+        if not grid:
+            for key, value in self.graphs.items():
+                if value is not None:
+                    fig = plt.figure(figsize=(8, 8), clear=True)
+                    ax = fig.add_subplot(111)
+                    ox.plot_graph(
+                        value,
+                        ax=ax,
+                        figsize=None,
+                        bgcolor="#FFFFFF",
+                        node_color="blue",
+                        node_size=5,
+                        node_alpha=None,
+                        node_edgecolor="none",
+                        node_zorder=1,
+                        edge_color="#000000",
+                        edge_linewidth=1,
+                        edge_alpha=None,
+                        show=False,
+                        close=False,
+                        save=False,
+                        filepath=None,
+                        dpi=300,
+                        bbox=None,
+                    )
+                    ax.set_title(key)
+                    plt.show()
+
+            plt.close("all")
+            return None
+
+        # Find the number of rows and columns
+        number_of_rows = int(np.ceil(np.sqrt(self.number_of_graphs)))
+        number_of_columns = int(np.ceil(self.number_of_graphs / number_of_rows))
+
+        # Create the figure
+        fig, ax = plt.subplots(
+            number_of_rows,
+            number_of_columns,
+            figsize=(20, 20),
+            sharex=False,
+            sharey=False,
+        )
+        title = self.place if self.place else self.shapefile
+        fig.suptitle(f"Graphs from {title}", fontsize=16)
+
+        # Plot the graphs
+        ax_index = 0
+        for key, value in self.graphs.items():
+            if value is not None:
+                ox.plot_graph(
+                    value,
+                    ax=ax[ax_index // number_of_columns, ax_index % number_of_columns],
+                    figsize=None,
+                    bgcolor="#FFFFFF",
+                    node_color="blue",
+                    node_size=5,
+                    node_alpha=None,
+                    node_edgecolor="none",
+                    node_zorder=1,
+                    edge_color="#000000",
+                    edge_linewidth=1,
+                    edge_alpha=None,
+                    show=False,
+                    close=False,
+                    save=False,
+                    filepath=None,
+                    dpi=300,
+                    bbox=None,
+                )
+                # fig.add_subplot(ox_ax)
+                ax[
+                    ax_index // number_of_columns, ax_index % number_of_columns
+                ].set_title(" ".join(key.split(" ", 2)[:2]))
+                ax_index += 1
+
+        # Show the figure
+        plt.tight_layout()
+        plt.show()
+        plt.close()
 
         return None
 
