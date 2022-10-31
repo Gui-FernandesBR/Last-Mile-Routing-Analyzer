@@ -229,7 +229,69 @@ class geometry:
         """
         return None
 
-        # simply plot our graph
+    # Evaluation and manipulation methods
+
+    def evaluate_basic_stats(self):
+
+        self.stats_dict = {}
+        initial_cpu_time = process_time()
+        output = display("Starting", display_id=True)
+
+        for key, value in self.graphs.items():
+            self.stats_dict[key] = ox.stats.basic_stats(
+                value, area=None, clean_int_tol=None
+            )
+            output.update(
+                f"Basic statistics for '{key}' calculated! Completed: {len(self.stats_dict)} of {self.number_of_polygons}",
+            )
+        # TODO: Discover how to get the area of the graph
+
+        output.update(
+            "Completed {} basic stats calculation using a total CPU time of: {:.1f} s".format(
+                len(self.stats_dict),
+                process_time() - initial_cpu_time,
+            )
+        )
+
+        # Calculate the number of graphs created that are not None
+        self.number_of_stats = len([graph for graph in self.graphs.values() if graph])
+        self.basic_stats_quality_percentage = (
+            100 * self.number_of_stats / self.number_of_polygons
+        )
+        print(
+            f"It was possible to create a graph for {self.number_of_stats} of {self.number_of_polygons} polygons."
+        )
+        print(
+            "Basic stats quality: {:.0f} %".format(self.basic_stats_quality_percentage)
+        )
+
+        self.__create_attribute_table()
+
+        return None
+
+    def __create_attribute_table(self):
+        """Create a pandas data frame with the basic stats of each graph.
+
+        Returns
+        -------
+        None
+        """
+
+        self.attribute_table = pd.DataFrame.from_dict(self.stats_dict, orient="index")
+        names_list = [" ".join(x.split(" ", 2)[:2]) for x in list(self.graphs.keys())]
+        self.attribute_table["name"] = names_list
+
+        return None
+
+    def evaluate_street_orientation(self):
+
+        # Evaluate bearing at each and convert to a data frame
+        self.edges_dict = {
+            i: j.edges(keys=True, data=True) for i, j in self.graphs.items()
+        }
+        self.bearing_dict = {i: j["bearing"] for i, j in self.edges_dict.items()}
+
+        return None
 
     # Plot methods
 
