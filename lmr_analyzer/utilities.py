@@ -80,7 +80,7 @@ def drive_distance_gmaps(origin, destination, api_key):
     return (distance, duration)
 
 
-def drive_distance_osm(origin, destination):
+def drive_distance_osm(origin, destination, session=None):
     """Calculate the driving distance between two points using OSM API.
     Internet connection is required.
 
@@ -98,6 +98,7 @@ def drive_distance_osm(origin, destination):
         The distance is in meters and the duration is in minutes.
     """
 
+    # start = time.time()
     # Create the coordinates string
     coordinates = "{},{};{},{}".format(
         origin[1], origin[0], destination[1], destination[0]
@@ -105,7 +106,9 @@ def drive_distance_osm(origin, destination):
 
     # Get the driving distance from the OpenStreetMaps API
     url = "http://router.project-osrm.org/route/v1/driving/{}".format(coordinates)
-    r = requests.get(url)
+    if session is None:
+        session = requests.Session()
+    r = session.get(url)
     res = r.json()
 
     # Check if the route was properly found, raise an error if not
@@ -122,7 +125,12 @@ def drive_distance_osm(origin, destination):
     # geometry = polyline.decode(res["routes"][0]["geometry"])
 
     # Return a tuple with the route length and duration
-    print(distance)
+    # end = time.time()
+    # print(
+    #     "OSM API request took {} seconds to catch driving distance from {} to {}".format(
+    #         end - start, origin, destination
+    #     )
+    # )
     return (distance, duration)
 
 
@@ -186,7 +194,7 @@ def drive_distance_bing(origin, destination):
     pass
 
 
-def get_distance(location1, location2, mode="haversine"):
+def get_distance(location1, location2, mode="haversine", session=None):
     """Calculate the distance between two points. It supports five different
     distance calculation methods: "haversine", "gmaps", "osm", "osmnx" and "bing".
     Some of these methods were not extensively tested, so use them with caution.
@@ -213,7 +221,7 @@ def get_distance(location1, location2, mode="haversine"):
     if mode == "haversine":
         return (Haversine(location1[0], location1[1], location2[0], location2[1]), 0)
     elif mode == "osm":
-        return drive_distance_osm(location1, location2)
+        return drive_distance_osm(location1, location2, session)
     elif mode == "osmnx":
         return (drive_distance_osmnx(location1, location2), 0)
     elif mode == "gmaps":
@@ -260,6 +268,3 @@ def get_city_state_names(location, session=None):
     state = res["address"]["state"]
 
     return (city, state)
-
-
-# Main goal here is simple: keep the file organized and useful, and let's go then
