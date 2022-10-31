@@ -1,5 +1,5 @@
-# Define the geometry bu reading a shapefile
-# define a method as --> def add_layer(self, layer):
+__author__ = "Guilherme Fernandes Alves"
+__license__ = "Mozilla Public License 2.0"
 
 import osmnx as ox
 import geopandas as gpd

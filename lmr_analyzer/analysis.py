@@ -1,4 +1,6 @@
 __author__ = "Guilherme Fernandes Alves"
+__license__ = "Mozilla Public License 2.0"
+
 
 
 class analysis:
