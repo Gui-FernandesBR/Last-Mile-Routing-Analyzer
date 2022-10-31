@@ -1,10 +1,13 @@
 __author__ = "Guilherme Fernandes Alves"
 __license__ = "Mozilla Public License 2.0"
 
-from math import radians, cos, sin, asin, sqrt
-import osmnx as ox
-import networkx as nx
+import warnings
+from math import asin, cos, radians, sin, sqrt
+
 import googlemaps
+import networkx as nx
+import osmnx as ox
+import requests
 
 # Distances calculations
 
@@ -13,6 +16,22 @@ def Haversine(lat1, lon1, lat2, lon2):
     """
     Calculate the great circle distance between two points
     on the earth (specified in decimal degrees)
+
+    Parameters
+    ----------
+    lat1 : float
+        Latitude of the first point.
+    lon1 : float
+        Longitude of the first point.
+    lat2 : float
+        Latitude of the second point.
+    lon2 : float
+        Longitude of the second point.
+
+    Returns
+    -------
+    distance : float
+        The distance between the two points in kilometers.
     """
     # convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
@@ -90,10 +109,12 @@ def drive_distance_osm(origin, destination, session=None):
         The origin point coordinates. The coordinates must be in the form (lat, lon).
     destination : tuple
         The destination point coordinates. The coordinates must be in the form (lat, lon).
+    session : requests.Session
+        The session to be used to make the request. If None, a new session will be created. This can be used to reuse the same session for multiple requests, which can impact performance.
 
     Returns
     -------
-    (distance, durante) : tuple
+    (distance, duration) : tuple
         The distance and duration of the shortest path between the origin and destination points.
         The distance is in meters and the duration is in minutes.
     """
@@ -191,6 +212,10 @@ def drive_distance_osmnx(origin, destination):
 
 
 def drive_distance_bing(origin, destination):
+    """Calculate the driving distance between two points using Bing Maps API.
+    Internet connection is required.
+    """
+    # Hey, I will implement this later!
     pass
 
 
