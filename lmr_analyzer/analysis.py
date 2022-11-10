@@ -422,5 +422,107 @@ class analysis:
 
         return None
 
+    def plot_historical_routes(self, save=False, show=True):
+        # TODO: Implement this
+        # delivery_history = {}
+        # delivered_packages = {}
+        # rejected_packages = {}
+        # attempted_packages = {}
+        # for year in self.calendar_dict.values():
+        #     pass  # Only for safety reasons, temporarily
+        #     for month in year.values():
+        #         for day in month.values():
+        #             for route in day.values():
+        #                 for stop in route.values():
+        #                     if stop.location_type == "delivery":
+        #                         delivery_history[f"{year}-{month}-{day}"] += (
+        #                             1
+        #                             if f"{year}-{month}-{day}"
+        #                             in delivery_history.keys()
+        #                             else 1
+        #                         )
+
+        # self.delivery_history_list = [
+        #     [datetime(i.split("-")), j] for i, j in delivery_history.items()
+        # ]
+
+        # plt.plot(self.delivery_history_list)
+
+        return None
+
+    def print_all_info(self):
+        # TODO: Need further improvements
+        print(
+            "The time period of the analysis group is: from {} to {}".format(
+                self.time_period[0].strftime("%Y-%m-%d"),
+                self.time_period[1].strftime("%Y-%m-%d"),
+            )
+        )
+        print("The time period length is: {} days".format(self.time_period_length.days))
+        print("The number of routes is: {}".format(len(self.routes)))
+        print("The number of stops is: {}".format(len(self.unique_stops_dict)))
+        print("The number of deliveries is: {}".format(self.number_of_deliveries))
+
+        return None
+
+    def plot_all_info(self):
+        # TODO: Implement this
+        return None
+
+    def analyze(self):
+        """Analyze the routes.
+
+        Returns
+        -------
+        None
+        """
+        # Plot the circuity factor against number of rejected attempts
+        cf_rejected, cf_delivered, cf_attempt = [], [], []
+        for route in self.routes:
+            route.evaluate_route_status()
+            route.evaluate_circuity_factor(planned=False)
+            cf_rejected.append(
+                [route.avg_circuity_factor_actual, route.rejected_packages_percentage]
+            )
+            cf_delivered.append(
+                [route.avg_circuity_factor_actual, route.delivered_packages_percentage]
+            )
+            cf_attempt.append(
+                [route.avg_circuity_factor_actual, route.attempted_packages_percentage]
+            )
+
+        # plt.plot( cf_rejected, label="Rejected")
+        plt.scatter(
+            x=[x[0] for x in cf_rejected],
+            y=[x[1] * 100 for x in cf_rejected],
+            label="Rejected",
+        )
+        plt.title("Rejected % vs Circuity Factor")
+        plt.xlabel("Circuity Factor")
+        plt.ylabel("Rejected %")
+        plt.legend()
+        plt.show()
+        # plt.plot(cf_delivered, label="Delivered")
+        plt.scatter(
+            x=[x[0] for x in cf_delivered],
+            y=[x[1] * 100 for x in cf_delivered],
+            label="Delivered",
+        )
+        plt.title("Delivered % vs Circuity Factor")
+        plt.xlabel("Circuity Factor")
+        plt.ylabel("Delivered %")
+        plt.legend()
+        plt.show()
+        # plt.plot(cf_attempt, label="Attempted")
+        plt.scatter(
+            x=[x[0] for x in cf_attempt],
+            y=[x[1] * 100 for x in cf_attempt],
+            label="Attempted",
+        )
+        plt.title("Attempted % vs Circuity Factor")
+        plt.xlabel("Circuity Factor")
+        plt.ylabel("Attempted %")
+        plt.legend()
+        plt.show()
 
         return None
