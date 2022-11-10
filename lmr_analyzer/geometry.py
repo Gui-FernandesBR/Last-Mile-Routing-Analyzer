@@ -1,8 +1,17 @@
 __author__ = "Guilherme Fernandes Alves"
 __license__ = "Mozilla Public License 2.0"
 
-import osmnx as ox
+import json
+import os
+from time import process_time
+
+import cloudpickle
 import geopandas as gpd
+import matplotlib.pyplot as plt
+import numpy as np
+import osmnx as ox
+import pandas as pd
+from IPython.display import display
 
 
 class geometry:
@@ -54,6 +63,8 @@ class geometry:
                 raise ValueError(
                     "You must provide either a shapefile, place query or a bounding box, otherwise there is no way to create the geometry."
                 )
+
+        self.bearing_dict = None
 
         return None
 
@@ -114,7 +125,7 @@ class geometry:
         self.geo_data_frame = gpd.read_file(self.shapefile)  # .shp extension
         self.number_of_polygons = len(self.geo_data_frame.values)
 
-        self.__create_multiple_graphs(keys="Name", values="geometry")
+        self.__create_multiple_graphs(keys="name", values="geometry")
 
         return None
 
@@ -314,12 +325,30 @@ class geometry:
 
         return self.attribute_table.plot(kind=kind, x=x, y=x, color=color)
 
-    def plot_graphs(self, grid=True):
+    def plot_graphs(self, grid=True, savefig=False, dpi=300, figsize=(8, 8)):
+        """Plots the graphs for each neighborhood or polygon. It can be used to
+        generate either a grid of plots or a single plot for each graph.
 
+        Parameters
+        ----------
+        grid : bool, optional
+            If set to True, it will generate a grid of plots with the graphs. If False, it will generate a single plot for each graph. by default True
+        savefig : bool, optional
+            If True, it will save the figure in the current working directory, and therefore will not show the figure. by default False
+        dpi : int, optional
+            Resolution of the final plot, by default 300
+        figsize : tuple, optional
+            Define either the size of each graph figure or for the figure with the grid of plots, by default (8, 8)
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
         if not grid:
             for key, value in self.graphs.items():
                 if value is not None:
-                    fig = plt.figure(figsize=(8, 8), clear=True)
+                    fig = plt.figure(figsize=figsize, clear=True)
                     ax = fig.add_subplot(111)
                     ox.plot_graph(
                         value,
@@ -342,25 +371,34 @@ class geometry:
                         bbox=None,
                     )
                     ax.set_title(key)
-                    plt.show()
+                    if savefig:
+                        try:
+                            fig.savefig(f"graph_{key}.pdf", dpi=dpi)
+                            # print(f"Graph '{key}' saved!")
+                        except:
+                            print(f"Graph '{key}' could not be saved!")
+                    else:
+                        plt.show()
+                    plt.close()
 
-            plt.close("all")
+            # plt.close("all")
             return None
 
         # Find the number of rows and columns
         number_of_rows = int(np.ceil(np.sqrt(self.number_of_graphs)))
         number_of_columns = int(np.ceil(self.number_of_graphs / number_of_rows))
+        # del_axes = number_of_rows * number_of_columns - self.number_of_graphs
 
         # Create the figure
         fig, ax = plt.subplots(
             number_of_rows,
             number_of_columns,
-            figsize=(20, 20),
+            figsize=figsize,
             sharex=False,
             sharey=False,
         )
         title = self.place if self.place else self.shapefile
-        fig.suptitle(f"Graphs from {title}", fontsize=16)
+        # fig.suptitle(f"Graphs from {title}", fontsize=16)
 
         # Plot the graphs
         ax_index = 0
@@ -394,12 +432,71 @@ class geometry:
 
         # Show the figure
         plt.tight_layout()
-        plt.show()
+        # fig.delaxes(ax[-1][del_axes])
+        if savefig:
+            fig.savefig(f"graphs_grid.pdf", dpi=dpi)
+        else:
+            plt.show()
         plt.close()
 
         return None
 
-    def add_layer(self, layer):
+    def plot_street_orientation(self):
+        """_summary_
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+
+        if not isinstance(self.bearing_dict, dict):
+            self.evaluate_street_orientation()
+
+        # Find the number of rows and columns
+        number_of_rows = int(np.ceil(np.sqrt(len(self.bearing_dict))))
+        number_of_columns = int(np.ceil(len(self.bearing_dict) / number_of_rows))
+
+        # Create the figure
+        fig, ax = plt.subplots(
+            number_of_rows,
+            number_of_columns,
+            figsize=(20, 20),
+            sharex=True,
+            sharey=True,
+        )
+
+        # Plot the graphs
+        i = 0
+        for key, value in self.bearing_dict.items():
+            i += 1
+            n = 36
+            count, division = np.histogram(
+                value, bins=[ang * 360 / n for ang in range(0, n + 1)]
+            )
+            division = division[0:-1]
+            width = 2 * np.pi / n
+            # 6 rows and 6 columns
+            ax = plt.subplot(6, 6, i, projection="polar", label=key)
+            ax.set_theta_zero_location("N")
+            ax.set_theta_direction("clockwise")
+            bars = ax.bar(
+                division * np.pi / 180 - width * 0.5,
+                count,
+                width=width,
+                bottom=0.0,
+                color="green",
+            )
+            ax.set_title(f"{key}", y=1.1)
+
+        # Show the figure
+        plt.show()
+        plt.close()
+
         return None
 
     # Export methods
@@ -416,8 +513,7 @@ class geometry:
 
         Returns
         -------
-        _type_
-            _description_
+        None
         """
 
         for key, value in self.graphs.items():
@@ -425,7 +521,47 @@ class geometry:
 
         return None
 
-    def attribute_table(self):
+    def export_summary(self, path):
+        """_summary_
+
+        Parameters
+        ----------
+        path : str
+            The path to save the shapefile. This should not include the file format.
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
+
+        # Create a dictionary with the summary
+        summary = {
+            "place": self.place,
+            # "number_of_neighborhoods": self.number_of_neighborhoods,
+            # "number_of_census_tracts": self.number_of_census_tracts,
+            # "number_of_major_roads": self.number_of_major_roads,
+            # "number_of_minor_roads": self.number_of_minor_roads,
+            # "number_of_major_nodes": self.number_of_major_nodes,
+            # "number_of_minor_nodes": self.number_of_minor_nodes,
+            # "number_of_major_edges": self.number_of_major_edges,
+            # "number_of_minor_edges": self.number_of_minor_edges,
+            # "number_of_major_graphs": self.number_of_major_graphs,
+            # "number_of_minor_graphs": self.number_of_minor_graphs,
+            # "number_of_major_graph_nodes": self.number_of_major_graph_nodes,
+            # "number_of_minor_graph_nodes": self.number_of_minor_graph_nodes,
+            # "number_of_major_graph_edges": self.number_of_major_graph_edges,
+            # "number_of_minor_graph_edges": self.number_of_minor_graph_edges,
+        }
+
+        # Save the dictionary as a json file
+        with open(path, "w") as file:
+            json.dump(summary, file)
+
+        # Save the dictionary as a csv file
+        with open(path + ".csv", "w") as file:
+            pass
+
         return None
 
     # Pickle object to save time in the future
