@@ -1,6 +1,12 @@
 osmnx
 geopandas
-googlemaps
-numpy
 datetime
 pytz
+matplotlib
+cloudpickle
+pandas
+IPython
+numpy
+googlemaps
+networkx
+requests
