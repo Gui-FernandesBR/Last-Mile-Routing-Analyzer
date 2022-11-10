@@ -459,7 +459,26 @@ class route:
     def evaluate_route_area(self):
         return None
 
-    def evaluate_route_centroid(self, sequence):
+    def calculate_route_centroid(self):
+
+        # Calculate the centroid of the route
+        locations = []
+        for x in self.stops.values():
+            if x.location_type != "delivery":
+                continue
+            locations.append(x.location)
+
+        try:
+            coords = np.array([[x[0], x[1]] for x in locations])
+            # print(coords)
+            self.actual_sequence_centroid = (
+                np.mean(coords[:, 0]),
+                np.mean(coords[:, 1]),
+            )
+        except Exception as e:
+            print(e)
+            self.actual_sequence_centroid = (np.nan, np.nan)
+
         return None
 
     # Export and visualize route
