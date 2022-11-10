@@ -10,12 +10,27 @@ from .stop import stop
 from .utilities import get_distance
 import requests
 
-session = requests.Session()
 
-# TODO: Need to test the FC evaluation function
 class route:
+    """Store all the relevant information regarding one route. A route is defined
+    as a sequence of stops that a vehicle follows in a specific day. The route
+    object can be defined by a list of stops or a dictionary of stops, not
+    necessarily in the correct order. After that, the user can set either the
+    planned sequence, the actual sequence, or both. The planned sequence is the
+    sequence of stops that the route is supposed to follow, usually determined by
+    the route planner. The actual sequence is the sequence of stops that the route
+    actually followed.
+
+    Attributes
+    ----------
+    name : string
+        The name of the route.
+    ...
+
+    """
+
     def __init__(self, name, stops, departure_time=None, vehicle=None):
-        """_summary_
+        """Initialize the route object.
 
         Parameters
         ----------
@@ -25,6 +40,10 @@ class route:
             A list or dictionary containing the stops of the route. Each stop must be of type
             stop. If dictionary, the keys must be the stop names and the values must be the
             stop objects.
+        departure_time : datetime.time
+            The departure time of the route. If None, TODO: Decide what to-do in this case
+        vehicle : string
+            The vehicle that follows the route.
 
         Returns
         -------
@@ -49,12 +68,64 @@ class route:
         else:
             raise ValueError("Invalid stops: must be a list or dictionary of stops.")
 
-        # Calculate the number of unique stops, i.e., the number of stops that
-        # are not repeated in the route
-        self.unique_stops = list(set(self.stops_names))
-        self.number_of_unique_stops = len(self.unique_stops)
-
         return None
+
+    # # Private methods to be used by the constructor
+    # # TODO: I will move this one to the analysis class
+    # def __calculate_unique_stops(self):
+    #     """Calculate the unique stops lists and the number of unique stops.
+    #     It assumes that stops that are closer than 50 meters are the same stop,
+    #     considering the haversine distance between them.
+
+    #     Parameters
+    #     ----------
+    #     None
+
+    #     Returns
+    #     -------
+    #     None
+    #     """
+
+    #     # Iterate over the stops and count the number of unique stops
+    #     unique_stops = {
+    #         0: {
+    #             "latitude": self.stops[self.stops_names[0]].location[0],
+    #             "longitude": self.stops[self.stops_names[0]].location[1],
+    #             "stops": [],
+    #         }
+    #     }
+
+    #     # Iterate through the stops list
+    #     for stop in self.stops.values():
+    #         # Iterate through the unique stops dictionary
+    #         for unique_stop in unique_stops.values():
+    #             # If the distance is lower and 50m
+    #             if (
+    #                 get_distance(
+    #                     (unique_stop["latitude"], unique_stop["longitude"]),
+    #                     (stop.location[0], stop.location[1]),
+    #                 )[0]
+    #                 < 0.1
+    #             ):
+    #                 # Add the stop to the list of stops of the current unique stop
+    #                 unique_stop["stops"].append(stop)
+    #                 # Break the loop
+    #                 break
+    #         else:
+    #             # If the loop did not break, then the stop is unique until now
+    #             unique_stops[len(unique_stops)] = {
+    #                 "latitude": stop.location[0],
+    #                 "longitude": stop.location[1],
+    #                 "stops": [stop],
+    #             }
+
+    #     # Save attributes
+    #     self.unique_stops = unique_stops
+    #     self.number_of_unique_stops = len(unique_stops)
+
+    #     return None
+
+    # Setter methods
 
     def set_planned_sequence(self, sequence):
         """Set the planned sequence of the route. The planned sequence is the
@@ -158,6 +229,8 @@ class route:
         # Fill the route status dictionary
         route_status["number_of_delivery_stops"] = self.number_of_stops
         for stop in self.stops.values():
+            if stop.location_type != "delivery":
+                continue
             route_status["number_of_packages"] += stop.number_of_packages
             route_status[
                 "number_of_delivered_packages"
@@ -205,7 +278,7 @@ class route:
 
     # Analyzing route times
 
-    def __calculate_route_times(self):
+    def calculate_route_times(self):
         return None
 
     # Analyzing route distances
@@ -496,6 +569,5 @@ class route:
     def load_from_file(cls, filename):
         return None
 
-    @classmethod
     def save_to_file(self, filename):
         return None
