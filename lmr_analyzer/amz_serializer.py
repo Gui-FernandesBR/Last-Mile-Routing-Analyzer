@@ -1,7 +1,6 @@
 __author__ = "Guilherme Fernandes Alves"
 __license__ = "Mozilla Public License 2.0"
 
-import copy
 import json
 import time
 from datetime import datetime
@@ -15,9 +14,68 @@ from .stop import stop as stop_class
 from .vehicle import vehicle as vehicle_class
 
 
+class bbox:
+    """Auxiliary class to store bounding box information
+
+    Attributes
+    ----------
+    name : str
+        The name of the bounding box
+    lat_min : float
+        The minimum latitude of the bounding box
+    lon_min : float
+        The minimum longitude of the bounding box
+    lat_max : float
+        The maximum latitude of the bounding box
+    lon_max : float
+        The maximum longitude of the bounding box
+    """
+
+    def __init__(self, name, lat1, lat2, lon1, lon2):
+        """Constructor for the bbox class
+
+        Parameters
+        ----------
+        name : str
+            The name of the bounding box
+        lat1 : float
+            The minimum latitude of the bounding box
+        lon1 : float
+            The minimum longitude of the bounding box
+        lat2 : float
+            The maximum latitude of the bounding box
+        lon2 : float
+            The maximum longitude of the bounding box
+
+        Returns
+        -------
+        None
+        """
+        self.name = name
+        self.lat_min = min(lat1, lat2)
+        self.lon_min = min(lon1, lon2)
+        self.lat_max = max(lat1, lat2)
+        self.lon_max = max(lon1, lon2)
+
+        return None
+
+
 class amz_serializer:
     """A serializer for the Amazon data. The serializer is used to convert the
     Amazon data into a format that can be used by the LMR algorithm.
+
+    Attributes
+    ----------
+    root_directory : str
+        The root directory of the database.
+
+
+    Methods
+    -------
+    serialize_all(root_directory)
+        Serializes all the data in the database.
+    ...
+
     """
 
     def __init__(self, root_directory=None):
@@ -39,7 +97,7 @@ class amz_serializer:
 
         return None
 
-    def serialize_package(self, packages_dict):
+    def serialize_packages(self, packages_dict):
         """Serializes a package object into a dictionary. The dictionary can be
         used to create a new package object for each package present in the
         packages_dict.
@@ -106,7 +164,7 @@ class amz_serializer:
 
         return packages_dict
 
-    def serialize_route(self, routes_dict, packages_dict):
+    def serialize_routes(self, routes_dict, packages_dict, bbox_list=None):
         """Serializes a route object into a dictionary. The dictionary can be
         used to create a new route object for each route present in the
         routes_dict.
@@ -116,10 +174,16 @@ class amz_serializer:
         routes_dict : dict
             A dictionary containing the routes to be serialized. The dictionary
             must be in the form ...
+        packages_dict : dict
+            A dictionary containing the packages to be serialized. The dictionary
+            must be in the form ...
+        bbox_list : list
+            A list containing the bounding boxes to be used in the routes. It
+            must be a list of bbox objects.
 
         Returns
         -------
-        dict
+        routes_dict: dict
             A dictionary containing the serialized routes. The dictionary is
             in the form ...
 
@@ -129,7 +193,49 @@ class amz_serializer:
             If the routes_dict is not in the correct format.
         """
 
-        for index1, route_id in enumerate(routes_dict):
+        # Initialize the bounding box list
+        if bbox_list is None:
+            # Define all the five standard bounding box
+            los_angeles = bbox(
+                name="Los Angeles",
+                lat1=36,
+                lat2=30,
+                lon1=-117,
+                lon2=-120,
+            )
+
+            seattle = bbox(
+                name="Seattle",
+                lat1=50,
+                lat2=46,
+                lon1=-124,
+                lon2=-120,
+            )
+
+            chicago = bbox(name="Chicago", lat1=41, lat2=43, lon1=-90, lon2=-86)
+
+            boston = bbox(
+                name="Boston",
+                lat1=41,
+                lat2=44,
+                lon1=-73,
+                lon2=-70,
+            )
+
+            austin = bbox(
+                name="Austin",
+                lat1=31,
+                lat2=29,
+                lon1=-99,
+                lon2=-97,
+            )
+
+            # Save the bounding boxes in a list
+            self.bbox_list = [los_angeles, seattle, chicago, boston, austin]
+        else:
+            self.bbox_list = bbox_list
+
+        for route_id, route in routes_dict.items():
             if isinstance(routes_dict[route_id], route_class):
                 continue
 
@@ -180,7 +286,61 @@ class amz_serializer:
 
             routes_dict[route_id] = route
 
+        # Separate the routes in different bounding boxes
+        routes_dict = self.__separate_routes_by_bbox(routes_dict, self.bbox_list)
+
         return routes_dict
+
+    def __separate_routes_by_bbox(self, routes_dict, bbox_list):
+        """Separates the routes by bounding box. The routes are separated by
+        bounding box to reduce the computational cost of the LMR algorithm.
+
+        Warning: Please take care when selecting the bounding boxes. The code
+        will not work properly if a route is present in more than one bounding
+        box.
+
+        Parameters
+        ----------
+        bbox_list : list
+            A list of bbox objects.
+
+        Returns
+        -------
+        dict:
+            A dictionary containing the routes separated by bounding box. Example:
+            new_routes_dict = {
+                bbox1: {route1, route2, ...},
+                bbox2: {route3, route4, ...},
+                ...
+            }
+        """
+
+        # Create a new dictionary to store the routes separated by bounding box
+        new_routes_dict = {i.name: {} for i in bbox_list}
+
+        # Iterate through the routes
+        for route_id, route in routes_dict.items():
+            # Get the first stop of the route
+            stop = route.stops[list(route.stops.keys())[0]]
+
+            # Get the coordinates of the current stop
+            lat, lng = stop.location
+
+            # Iterate through the bounding boxes
+            for bbox in bbox_list:
+                # Check if the current stop is inside the current bounding box
+                if (
+                    bbox.lat_min <= lat <= bbox.lat_max
+                    and bbox.lon_min <= lng <= bbox.lon_max
+                ):
+                    # Add the route to the new dictionary
+                    new_routes_dict[bbox.name][route_id] = route
+                    # Break the loop
+                    break
+
+        # Return the new dictionary
+        # TODO: Understand why I am loosing 12 routes after this step
+        return new_routes_dict
 
     def serialize_actual_sequences(self, actual_sequences):
         """Serializes the actual sequences into a dictionary. The dictionary
@@ -238,7 +398,7 @@ class amz_serializer:
         packages_dict = db_package.copy()
 
         ## Serialize the package data
-        packages_dict = self.serialize_package(packages_dict=packages_dict)
+        packages_dict = self.serialize_packages(packages_dict=packages_dict)
 
         ## Calculate the total number of packages
         total_packages = 0
@@ -266,7 +426,7 @@ class amz_serializer:
         routes_dict = db_route.copy()
 
         ## Serialize the route data
-        self.routes_dict = self.serialize_route(
+        self.routes_dict = self.serialize_routes(
             routes_dict=routes_dict, packages_dict=packages_dict
         )
 
