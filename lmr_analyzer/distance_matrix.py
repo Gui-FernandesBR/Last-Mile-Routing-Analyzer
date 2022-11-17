@@ -144,6 +144,7 @@ class distance_matrix:
         route = matrix[1][0]
         inner_dict = {}
         routes_matrix = {}
+        distances = []
 
         for i in range(1, n_rows - 1):
             inner_dict[matrix[i][1]] = {
@@ -152,6 +153,7 @@ class distance_matrix:
                 "distance_to_next(km)": matrix[i][4],
                 "duration_to_next(min)": matrix[i][5],
             }
+            distances.append(float(matrix[i][4]))
             try:
                 if matrix[i + 1][0] == route:  # if the next route is the same
                     pass
@@ -178,24 +180,25 @@ class distance_matrix:
 
         # TODO: The next loops can be optimized
         for route in self.routes_matrix.keys():
-            for origin in self.routes_matrix[route].keys():
-                self.origins[origin] = {
-                    "name": origin,
-                    "latitude": self.routes_matrix[route][origin]["latitude"],
-                    "longitude": self.routes_matrix[route][origin]["longitude"],
-                }
-                self.matrix[f"{origin}-{route}"] = {}
-                for destination in self.routes_matrix[route].keys():
-                    self.destinations[destination] = {
-                        "name": destination,
-                        "latitude": self.routes_matrix[route][destination]["latitude"],
-                        "longitude": self.routes_matrix[route][destination][
-                            "longitude"
-                        ],
-                    }
-                    self.matrix[f"{origin}-{route}"][destination] = self.routes_matrix[
-                        route
-                    ][destination]["distance_to_next(km)"]
+            break  # just for now
+            # for origin in self.routes_matrix[route].keys():
+            #     self.origins[origin] = {
+            #         "name": origin,
+            #         "latitude": self.routes_matrix[route][origin]["latitude"],
+            #         "longitude": self.routes_matrix[route][origin]["longitude"],
+            #     }
+            #     self.matrix[f"{origin}-{route}"] = {}
+            #     for destination in self.routes_matrix[route].keys():
+            #         self.destinations[destination] = {
+            #             "name": destination,
+            #             "latitude": self.routes_matrix[route][destination]["latitude"],
+            #             "longitude": self.routes_matrix[route][destination][
+            #                 "longitude"
+            #             ],
+            #         }
+            #         self.matrix[f"{origin}-{route}"][destination] = self.routes_matrix[
+            #             route
+            #         ][destination]["distance_to_next(km)"]
 
         print("Awesome, the distance matrix loaded successfully!")
         print("The routes matrix was also loaded and saved as an attribute.")
