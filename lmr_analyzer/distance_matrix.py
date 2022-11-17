@@ -202,6 +202,46 @@ class distance_matrix:
 
         return None
 
+    def calculate_distances(self, mode="osm"):
+        """Calculates the distances between the origins and destinations,
+        using the selected mode.
+
+        Parameters
+        ----------
+        mode : str, optional
+            The mode , by default "osm"
+
+        Returns
+        -------
+        None
+        """
+
+        print("Hey, I will finish this soon!")
+        distance, duration = (None, None)
+        distances = (distance, duration)
+        matrix = {}
+
+        return None
+
+    def create_matrix(self):
+        """Generate the distance matrix. The distance matrix is a dictionary
+        containing the distance between each origin and destination node.
+        The dictionary has the following structure:
+        {
+            "origin_1": {
+                "destination_1": distance,
+                "destination_2": distance,
+                ...
+
+
+        Returns
+        -------
+        None
+        """
+        print("Hey, I will finish this soon!")
+
+        return None
+
     def calculate_matrix_statistics(self):
         """Calculates the statistics of the distance matrix and save them as
         attributes. The current available statistics are the following:
@@ -255,3 +295,23 @@ class distance_matrix:
         print(f"Standard deviation:         {self.std_distance:.3f} km")
 
         return None
+
+    def save_matrix(self, filename):
+        """Saves the distance matrix into a .json file.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to save the distance matrix.
+        """
+
+        with open(filename, "w") as f:
+            json.dump(self.matrix, f)
+
+        return None
+
+    @classmethod
+    def load(cls, path):
+        with open(path, "r") as f:
+            data = json.load(f)
+        return cls(data["origins"], data["destinations"])
