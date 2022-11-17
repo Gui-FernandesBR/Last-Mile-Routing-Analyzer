@@ -93,9 +93,18 @@ class distance_matrix:
             sequence,
         )
 
+        # Initialize the statistics attributes
+        self.max_distance = None
+        self.min_distance = None
+        self.average_distance = None
+        self.std_distance = None
+        self.n_origins = None
+        self.n_destinations = None
+        self.n_distances = None
+
         if self.matrix is not None:
             # A matrix was passed, let's evaluate and return
-            self.matrix_statistics()
+            self.calculate_matrix_statistics()
             self.origins_names = list(self.matrix.keys())
             self.destinations_names = list(self.matrix[self.origins_names[0]].keys())
 
@@ -160,6 +169,7 @@ class distance_matrix:
                 routes_matrix[route] = inner_dict
 
         self.routes_matrix = routes_matrix
+        self.distances = distances
 
         # Create the distance matrix in the format required by the class
         self.matrix = {}
@@ -189,5 +199,59 @@ class distance_matrix:
 
         print("Awesome, the distance matrix loaded successfully!")
         print("The routes matrix was also loaded and saved as an attribute.")
+
+        return None
+
+    def calculate_matrix_statistics(self):
+        """Calculates the statistics of the distance matrix and save them as
+        attributes. The current available statistics are the following:
+            - Maximum distance
+            - Minimum distance
+            - Average distance
+            - Standard deviation
+            - Number of origins
+            - Number of destinations
+            - Number of distances stored
+
+        Returns
+        -------
+        None
+        """
+
+        # Save the distances into a np.array
+        distances = np.array(self.distances)
+
+        # Maximum distance
+        self.max_distance = np.max(distances)
+        # Minimum distance
+        self.min_distance = np.min(distances)
+        # Average distance
+        self.average_distance = np.mean(distances)
+        # Standard deviation
+        self.std_distance = np.std(distances)
+        # Number of origins
+        self.n_origins = len(self.origins)
+        # Number of destinations
+        self.n_destinations = len(self.destinations)
+        # Number of distances stored
+        self.n_distances = len(distances)
+
+        return None
+
+    def print_info(self):
+        """Prints the information of the distance matrix.
+
+        Returns
+        -------
+        None
+        """
+
+        # print(f"Number of origins:          {self.n_origins}")
+        # print(f"Number of destinations:     {self.n_destinations}")
+        print(f"Number of distances stored: {self.n_distances}")
+        print(f"Maximum distance:           {self.max_distance:.3f} km")
+        print(f"Minimum distance:           {self.min_distance:.3f} km")
+        print(f"Average distance:           {self.average_distance:.3f} km")
+        print(f"Standard deviation:         {self.std_distance:.3f} km")
 
         return None
