@@ -100,3 +100,94 @@ class distance_matrix:
             self.destinations_names = list(self.matrix[self.origins_names[0]].keys())
 
         return None
+
+    def load_support_matrix_file(self, filename):
+        """Loads a support matrix file. A support matrix file is a file containing
+        the distance matrix and the origins and destinations coordinates. This
+        function will load the file and save the matrix, origins and destinations
+        as attributes. This can significantly reduce the time needed to perform
+        the distance matrix generation.
+
+        Parameters
+        ----------
+        filename : str,
+            The name of the file containing the support matrix. The file must
+            be a csv file with the following structure:
+            route, stop, lat, lon, distance_to_next_stop(km), duration(min)
+
+        Returns
+        -------
+        None
+        """
+
+        # Open and read the csv file
+        try:
+            with open(filename, "r") as f:
+                # Read the csv file, skipping the header and convert to a list
+                reader = csv.reader(f)
+                matrix = next(reader)
+                matrix = list(reader)
+        except FileNotFoundError:
+            print("File not found!")
+            return None
+
+        n_rows = len(matrix)
+        route = matrix[1][0]
+        inner_dict = {}
+        routes_matrix = {}
+
+        for i in range(1, n_rows - 1):
+            inner_dict[matrix[i][1]] = {
+                "latitude": matrix[i][2],
+                "longitude": matrix[i][3],
+                "distance_to_next(km)": matrix[i][4],
+                "duration_to_next(min)": matrix[i][5],
+            }
+            try:
+                if matrix[i + 1][0] == route:  # if the next route is the same
+                    pass
+                else:
+                    routes_matrix[route] = inner_dict
+                    route = matrix[i + 1][0]
+                    inner_dict = {}
+            except IndexError:  # If we are at the last row
+                inner_dict[matrix[i][1]] = {
+                    "latitude": matrix[i][2],
+                    "longitude": matrix[i][3],
+                    "distance_to_next(km)": matrix[i][4],
+                    "duration_to_next(min)": matrix[i][5],
+                }
+                routes_matrix[route] = inner_dict
+
+        self.routes_matrix = routes_matrix
+
+        # Create the distance matrix in the format required by the class
+        self.matrix = {}
+        self.origins = {}
+        self.destinations = {}
+
+        # TODO: The next loops can be optimized
+        for route in self.routes_matrix.keys():
+            for origin in self.routes_matrix[route].keys():
+                self.origins[origin] = {
+                    "name": origin,
+                    "latitude": self.routes_matrix[route][origin]["latitude"],
+                    "longitude": self.routes_matrix[route][origin]["longitude"],
+                }
+                self.matrix[f"{origin}-{route}"] = {}
+                for destination in self.routes_matrix[route].keys():
+                    self.destinations[destination] = {
+                        "name": destination,
+                        "latitude": self.routes_matrix[route][destination]["latitude"],
+                        "longitude": self.routes_matrix[route][destination][
+                            "longitude"
+                        ],
+                    }
+                    self.matrix[f"{origin}-{route}"][destination] = self.routes_matrix[
+                        route
+                    ][destination]["distance_to_next(km)"]
+
+        print("Awesome, the distance matrix loaded successfully!")
+        print("The routes matrix was also loaded and saved as an attribute.")
+
+        return None
