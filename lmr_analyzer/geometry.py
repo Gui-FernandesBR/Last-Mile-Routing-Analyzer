@@ -1,4 +1,5 @@
 __author__ = "Guilherme Fernandes Alves"
+__email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 
 import json
@@ -278,11 +279,9 @@ class geometry:
             "Basic stats quality: {:.0f} %".format(self.basic_stats_quality_percentage)
         )
 
-        self.__create_attribute_table()
-
         return None
 
-    def __create_attribute_table(self):
+    def create_attribute_table(self) -> None:
         """Create a pandas data frame with the basic stats of each graph.
 
         Returns
@@ -291,6 +290,15 @@ class geometry:
         """
 
         self.attribute_table = pd.DataFrame.from_dict(self.stats_dict, orient="index")
+        # Join data from the areas dictionary
+        self.attribute_table = self.attribute_table.join(
+            pd.DataFrame.from_dict(self.areas, orient="index", columns=["area"])
+        )
+        # Join data from the street_orientation_dict
+        self.attribute_table = self.attribute_table.join(
+            pd.DataFrame.from_dict(self.street_orientation_dict, orient="index")
+        )
+
         names_list = [" ".join(x.split(" ", 2)[:2]) for x in list(self.graphs.keys())]
         self.attribute_table["name"] = names_list
 
@@ -663,7 +671,7 @@ class geometry:
     # Export methods
 
     def save_graphs_to_shapefile(self, path):
-        """_summary_
+        """Saves the graphs to a shapefile.
 
         Parameters
         ----------
@@ -718,45 +726,42 @@ class geometry:
         df.to_csv(filename)
 
         return None
+
+    def export_basic_stats_to_csv(self, filename):
         """_summary_
 
         Parameters
         ----------
-        path : str
-            The path to save the shapefile. This should not include the file format.
+        filename : str
+            The filename to save the shapefile. This should not include the file format.
 
         Returns
         -------
-        _type_
-            _description_
+        None
         """
 
-        # Create a dictionary with the summary
-        summary = {
-            "place": self.place,
-            # "number_of_neighborhoods": self.number_of_neighborhoods,
-            # "number_of_census_tracts": self.number_of_census_tracts,
-            # "number_of_major_roads": self.number_of_major_roads,
-            # "number_of_minor_roads": self.number_of_minor_roads,
-            # "number_of_major_nodes": self.number_of_major_nodes,
-            # "number_of_minor_nodes": self.number_of_minor_nodes,
-            # "number_of_major_edges": self.number_of_major_edges,
-            # "number_of_minor_edges": self.number_of_minor_edges,
-            # "number_of_major_graphs": self.number_of_major_graphs,
-            # "number_of_minor_graphs": self.number_of_minor_graphs,
-            # "number_of_major_graph_nodes": self.number_of_major_graph_nodes,
-            # "number_of_minor_graph_nodes": self.number_of_minor_graph_nodes,
-            # "number_of_major_graph_edges": self.number_of_major_graph_edges,
-            # "number_of_minor_graph_edges": self.number_of_minor_graph_edges,
-        }
+        export_dict = {}
 
-        # Save the dictionary as a json file
-        with open(path, "w") as file:
-            json.dump(summary, file)
+        for key, value in self.stats_dict.items():
+            export_dict[key] = {
+                "count_of_nodes_in_graph": value["n"],
+                "count_of_edges_in_graph": value["m"],
+                "k_avg": round(value["k_avg"], 3),
+                "edge_length_total": round(value["edge_length_total"], 3),
+                "edge_length_avg": round(value["edge_length_avg"], 3),
+                "streets_per_node_avg": round(value["streets_per_node_avg"], 3),
+                # "streets_per_node_counts": value["streets_per_node_counts"],
+                # "streets_per_node_proportions": value["streets_per_node_proportions"],
+                "intersection_count": value["intersection_count"],
+                "street_length_total": round(value["street_length_total"], 3),
+                "street_segment_count": value["street_segment_count"],
+                "street_length_avg": round(value["street_length_avg"], 3),
+                "circuity_avg": round(value["circuity_avg"], 3),
+                "self_loop_proportion": round(value["self_loop_proportion"], 3),
+            }
 
-        # Save the dictionary as a csv file
-        with open(path + ".csv", "w") as file:
-            pass
+        df = pd.DataFrame.from_dict(export_dict, orient="index")
+        df.to_csv(filename)
 
         return None
 
