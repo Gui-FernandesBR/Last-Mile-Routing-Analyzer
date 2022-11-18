@@ -45,3 +45,4 @@ venv2/
 
 # OSM caches
 cache
+VRP-street-network.code-workspace
