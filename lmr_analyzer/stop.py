@@ -8,7 +8,7 @@ class stop:
     def __init__(
         self, name, location, location_type, time_window, planned_service_time, packages
     ):
-        """_summary_
+        """Initializes the stop object.
 
         Parameters
         ----------
@@ -95,7 +95,7 @@ class stop:
         status_list = [package.status for package in self.packages_list]
         self.number_of_delivered_packages = status_list.count("delivered")
         self.number_of_rejected_packages = status_list.count("rejected")
-        self.number_of_attempted_packages = status_list.count("attempted")
+        self.number_of_failed_attempted_packages = status_list.count("attempted")
         self.number_of_to_be_delivered_packages = status_list.count("to-be-delivered")
 
         # Count the total volume of the packages
@@ -127,7 +127,22 @@ class stop:
             if package.status == "to-be-delivered"
         ]
 
-        # TODO: Count the total weight of the packages
-        # TODO: Count the total price of the packages
+        self.total_weight_of_packages = sum(
+            [package.weight for package in self.packages_list]
+        )
+        self.average_weight_of_packages = (
+            self.total_weight_of_packages / len(self.packages_list)
+            if len(self.packages_list) > 0
+            else 0
+        )
+
+        self.total_price_of_packages = sum(
+            [package.price for package in self.packages_list]
+        )
+        self.average_price_of_packages = (
+            self.total_price_of_packages / len(self.packages_list)
+            if len(self.packages_list) > 0
+            else 0
+        )
 
         return None
