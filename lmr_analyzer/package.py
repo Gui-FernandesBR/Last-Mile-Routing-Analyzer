@@ -1,4 +1,5 @@
 __author__ = "Guilherme Fernandes Alves"
+__email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 
 
@@ -37,27 +38,22 @@ class package:
                 "Invalid package status: must be one of the following: 'to-be-delivered', 'rejected', 'attempted', 'delivered'."
             )
 
-        # Evaluate other attributes
-        self.volume = self.calculate_volume(dimensions)
-
         return None
 
-    # TODO: Transform to a property
-    def calculate_volume(self, dimensions):
+    @property
+    def volume(self):
         """Calculates the volume of the package, given its dimensions.
 
         Parameters
         ----------
-        dimensions : tuple
-            A tuple containing the dimensions of the package. The tuple must be
-            in the form (width, height, length).
+        None
 
         Returns
         -------
         float
             The volume of the package.
         """
-        return dimensions[0] * dimensions[1] * dimensions[2]
+        return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
 
     def modify_status(self, status):
         """Modifies the status of the package.
