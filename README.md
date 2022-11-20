@@ -30,9 +30,12 @@ The tool was developed in Python and it is able to analyze the last mile routing
 
 ## Getting started with examples:
 
-* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Gui-FernandesBR/VRP-street-network/blob/master/gmaps/distances_calculator.ipynb) - Using Google Maps to evaluate Circuity Factors
-* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Gui-FernandesBR/VRP-street-network/blob/master/osm/cumbica_neigh_example.ipynb) - Introductory Example over Cumbica, an important neighborhood of Guarulhos
-* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Gui-FernandesBR/VRP-street-network/blob/master/osm/guarulhos_streets_orientation.ipynb) - Street Orientation Analysis by using _OpenStreetMap_
+* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Gui-FernandesBR/Last-Mile-Routing-Analyzer/blob/master/notebooks/lmr_analyzer/lmr_analyzer_example.ipynb) - Main example notebook with all the features of lmr_analyzer package.
+
+* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Gui-FernandesBR/Last-Mile-Routing-Analyzer/blob/master/notebooks/lmr_analyzer/geometry_class_example.ipynb) - Example over Los Angeles city using the geometry class.
+
+More examples are currently being developed and will be added to the repository soon.
+A docs page is also being developed and will be available soon.
 
 ## Library Structure:
 
