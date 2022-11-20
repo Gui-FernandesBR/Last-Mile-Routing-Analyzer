@@ -1,4 +1,5 @@
 __author__ = "Guilherme Fernandes Alves"
+__email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 
 import csv
@@ -7,7 +8,6 @@ import json
 import numpy as np
 
 
-# TODO: Implement this fucking shit
 class distance_matrix:
     """A class to either calculate or load distance matrices. A distance matrix
     is used to store the distance between each origin and destination node.
