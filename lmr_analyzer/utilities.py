@@ -1,10 +1,10 @@
 __author__ = "Guilherme Fernandes Alves"
+__email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 
 import warnings
 from math import asin, cos, radians, sin, sqrt
 
-import googlemaps
 import networkx as nx
 import osmnx as ox
 import requests
@@ -67,7 +67,7 @@ def drive_distance_gmaps(origin, destination, api_key):
     (distance, durante) : tuple
         The distance and duration of the shortest path between the origin and destination points.
     """
-    # TODO: Test!
+    # TODO: Test gmaps API!
 
     # Create the coordinates string
     origin_coordinates = "{},{}".format(origin[0], origin[1])
@@ -170,7 +170,7 @@ def drive_distance_osmnx(origin, destination):
     route_length: float
         The length of the shortest path between the origin and destination points.
     """
-    # TODO: in the end, allow receiving stop objects
+    # TODO: allow receiving stop objects
 
     if not isinstance(origin, tuple) or not isinstance(destination, tuple):
         raise TypeError("The origin and destination must be tuple types.")

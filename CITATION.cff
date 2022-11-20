@@ -17,9 +17,4 @@ preferred-citation:
   - family-names: "Fernandes"
     given-names: "Felipe N."
   doi: "10.5281/zenodo.6792976"
-  #journal: "Journal of Aerospace Engineering"
-  month: 7
   title: "VRP-street-network"
-  #issue: 6
-  #volume: 34
-  year: 2022

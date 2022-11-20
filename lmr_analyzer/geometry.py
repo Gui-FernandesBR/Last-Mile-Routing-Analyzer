@@ -1,7 +1,7 @@
 __author__ = "Guilherme Fernandes Alves"
+__email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 
-import json
 import os
 from time import process_time
 
@@ -12,6 +12,8 @@ import numpy as np
 import osmnx as ox
 import pandas as pd
 from IPython.display import display
+
+plt.style.use("seaborn-v0_8-dark-palette")
 
 
 class geometry:
@@ -125,7 +127,7 @@ class geometry:
         self.geo_data_frame = gpd.read_file(self.shapefile)  # .shp extension
         self.number_of_polygons = len(self.geo_data_frame.values)
 
-        self.__create_multiple_graphs(keys="name", values="geometry")
+        self.__create_multiple_graphs(keys="Name", values="geometry")
 
         return None
 
@@ -276,11 +278,9 @@ class geometry:
             "Basic stats quality: {:.0f} %".format(self.basic_stats_quality_percentage)
         )
 
-        self.__create_attribute_table()
-
         return None
 
-    def __create_attribute_table(self):
+    def create_attribute_table(self) -> None:
         """Create a pandas data frame with the basic stats of each graph.
 
         Returns
@@ -289,18 +289,118 @@ class geometry:
         """
 
         self.attribute_table = pd.DataFrame.from_dict(self.stats_dict, orient="index")
+        # Join data from the areas dictionary
+        self.attribute_table = self.attribute_table.join(
+            pd.DataFrame.from_dict(self.areas, orient="index", columns=["area"])
+        )
+        # Join data from the street_orientation_dict
+        self.attribute_table = self.attribute_table.join(
+            pd.DataFrame.from_dict(self.street_orientation_dict, orient="index")
+        )
+
         names_list = [" ".join(x.split(" ", 2)[:2]) for x in list(self.graphs.keys())]
         self.attribute_table["name"] = names_list
 
         return None
 
-    def evaluate_street_orientation(self):
+    def evaluate_street_orientation(self) -> None:
+        """Evaluate the street orientation of each graph."""
+        street_orientation_dict = {}
 
-        # Evaluate bearing at each and convert to a data frame
-        self.edges_dict = {
-            i: j.edges(keys=True, data=True) for i, j in self.graphs.items()
-        }
-        self.bearing_dict = {i: j["bearing"] for i, j in self.edges_dict.items()}
+        # Add edge bearings to graph
+        # Add time to process
+        initial_cpu_time = process_time()
+        output = display("Starting", display_id=True)
+        for key, graph in self.graphs.items():
+            # Update the display
+            output.update(
+                f"Street orientation for '{key}' calculated! Completed: {len(street_orientation_dict)} of {self.number_of_polygons}",
+            )
+            graph = ox.add_edge_bearings(graph)
+
+            bearings = pd.Series(
+                [data["bearing"] for _, _, _, data in graph.edges(keys=True, data=True)]
+            )
+            original_bearings = bearings.copy()
+
+            # Calculate the mean and standard deviation of the bearings
+            bins = np.arange(0, 180, 10)
+            # Find the center of each bin
+            bin_centers = bins[:-1] + np.diff(bins) / 2
+            # Find the cosine and sine of the center of each bin
+            bin_cos = np.cos(np.deg2rad(bin_centers))
+
+            # Iterate through the bearings and if the angle is greater than 180, subtract 180
+            for index, value in enumerate(bearings):
+                if value > 180:
+                    bearings[index] = value - 180
+
+            # Count the number of edges in each bearing bin
+            counts = bearings.groupby(pd.cut(bearings, bins)).count()
+
+            # Calculate the mean and standard deviation of the bearings counts
+            mean = np.sum(counts * bin_cos) / np.sum(counts)
+            std = np.sqrt(np.sum(counts * (bin_cos - mean) ** 2) / np.sum(counts))
+
+            # Calculate the skewness of the bearings counts
+            skew = np.sum(counts * (bin_cos - mean) ** 3) / np.sum(counts) / std**3
+
+            # Calculate the kurtosis of the bearings counts
+            kurt = np.sum(counts * (bin_cos - mean) ** 4) / np.sum(counts) / std**4
+
+            # Count the total number of edges
+            total = counts.sum()
+
+            # The number if it was an uniform distribution
+            uniform = total / len(bins) * np.ones(len(bins) - 1)
+
+            # Calculate the absolute deviation from the uniform distribution
+            deviation = np.abs(counts - uniform) / uniform
+            # deviation = deviation / uniform.max()
+            mean_deviation = np.mean(deviation)
+            # Sum the quadratic deviation from the uniform distribution
+            sum_deviation = np.sum(deviation**2)
+
+            # Get the dominant direction
+            dominant_direction = counts.idxmax()
+            # Get the second dominant direction
+            second_dominant_direction = counts.drop(dominant_direction).idxmax()
+
+            # Calculate the percentage of edges in the dominant direction
+            dominant_percentage = counts[dominant_direction] / counts.sum() * 100
+
+            # Calculate the percentage of edges in the second dominant direction
+            second_dominant_percentage = (
+                counts[second_dominant_direction] / counts.sum() * 100
+            )
+
+            # Add the results to the dictionary
+            street_orientation_dict[key] = {
+                "graph": graph,
+                "bearings_0_180": bearings,
+                "bearings_0_360": original_bearings,
+                "counts_0_180": counts,
+                "dominant_direction": dominant_direction,
+                "second_dominant_direction": second_dominant_direction,
+                "dominant_percentage": dominant_percentage,
+                "second_dominant_percentage": second_dominant_percentage,
+                "uniform_value": uniform.max(),
+                "mean_deviation": mean_deviation,
+                "quadratic_sum_deviation": sum_deviation,
+                "mean": mean,
+                "std": std,
+                "skew": skew,
+                "kurt": kurt,
+            }
+
+        output.update(
+            "Completed {} street orientation calculation using a total CPU time of: {:.1f} s".format(
+                len(street_orientation_dict),
+                process_time() - initial_cpu_time,
+            )
+        )
+
+        self.street_orientation_dict = street_orientation_dict
 
         return None
 
@@ -441,68 +541,136 @@ class geometry:
 
         return None
 
-    def plot_street_orientation(self):
-        """_summary_
+    def plot_street_orientation_linear(
+        self, grid=False, savefig=False, dpi=300, figsize=(12, 4)
+    ):
+        """Plots the street orientation for each neighborhood or polygon. It can be used to
+        generate either a grid of plots or a single plot for each graph.
 
         Parameters
         ----------
-        None
+        grid : bool, optional
+            If set to True, it will generate a grid of plots with the graphs.
+            If False, it will generate a single plot for each graph. by default True
+        savefig : bool, optional
+            If True, it will save the figure in the current working directory,
+            and therefore will not show the figure. by default False
+        dpi : int, optional
+            Resolution of the final plot, by default 300
+        figsize : tuple, optional
+            Define either the size of each graph figure or for the figure with
+            the grid of plots, by default (12, 4)
 
         Returns
         -------
-        _type_
-            _description_
+        None
         """
 
-        if not isinstance(self.bearing_dict, dict):
-            self.evaluate_street_orientation()
+        if not grid:
+            for key, value in self.street_orientation_dict.items():
+                fig = plt.figure(figsize=figsize, clear=True)
+                ax = value["bearings_0_360"].hist(bins=36, figsize=figsize)
+                ax.set_xticks(np.arange(0, 361, 20))
+                ax.set_xlim(0, 360)
+                ax.set_title(f"{k} street network edge bearings")
 
-        # Find the number of rows and columns
-        number_of_rows = int(np.ceil(np.sqrt(len(self.bearing_dict))))
-        number_of_columns = int(np.ceil(len(self.bearing_dict) / number_of_rows))
+                # Save the figure if savefig is True, show otherwise
+                if savefig:
+                    fig.savefig(f"linear_hist_street_orientation_{key}.pdf", dpi=dpi)
+                else:
+                    plt.show()
+                plt.close()
 
-        # Create the figure
-        fig, ax = plt.subplots(
-            number_of_rows,
-            number_of_columns,
-            figsize=(20, 20),
-            sharex=True,
-            sharey=True,
-        )
+        return None
 
-        # Plot the graphs
-        i = 0
-        for key, value in self.bearing_dict.items():
-            i += 1
-            n = 36
-            count, division = np.histogram(
-                value, bins=[ang * 360 / n for ang in range(0, n + 1)]
-            )
-            division = division[0:-1]
-            width = 2 * np.pi / n
-            # 6 rows and 6 columns
-            ax = plt.subplot(6, 6, i, projection="polar", label=key)
-            ax.set_theta_zero_location("N")
-            ax.set_theta_direction("clockwise")
-            bars = ax.bar(
-                division * np.pi / 180 - width * 0.5,
-                count,
-                width=width,
-                bottom=0.0,
-                color="green",
-            )
-            ax.set_title(f"{key}", y=1.1)
+    def plot_street_orientation_polar(
+        self, grid=False, savefig=False, dpi=300, figsize=(5, 5)
+    ):
+        """Plots the street orientation for each neighborhood or polygon. It can be used to
+        generate either a grid of plots or a single plot for each graph.
 
-        # Show the figure
-        plt.show()
-        plt.close()
+        Parameters
+        ----------
+        grid : bool, optional
+            If set to True, it will generate a grid of plots with the graphs.
+            If False, it will generate a single plot for each graph. by default True
+        savefig : bool, optional
+            If True, it will save the figure in the current working directory,
+            and therefore will not show the figure. by default False
+        dpi : int, optional
+            Resolution of the final plot, by default 300
+        figsize : tuple, optional
+            Define either the size of each graph figure or for the figure with
+            the grid of plots, by default (12, 4)
+
+        Returns
+        -------
+        None
+        """
+
+        if not grid:
+
+            # First, let's sort the dictionary by the quadratic_sum_deviation
+            sorted_dict = {
+                k: v
+                for k, v in sorted(
+                    self.street_orientation_dict.items(),
+                    key=lambda item: item[1]["quadratic_sum_deviation"],
+                )
+            }
+
+            counter = 0
+            for key, value in sorted_dict.items():
+                counter += 1
+                fig = plt.figure(figsize=figsize, clear=True)
+                ax = fig.add_subplot(111, projection="polar")
+                ax.set_title(f"{key} street network edge bearings")
+                ax.set_axisbelow(True)
+                ax.set_theta_zero_location("N")
+                ax.set_theta_direction(-1)
+                ax.set_xticks(np.arange(0, 2 * np.pi, np.pi / 8))
+                ax.hist(
+                    value["bearings_0_360"] * np.pi / 180,
+                    bins=36,
+                    # color="blue",
+                    alpha=0.95,
+                    zorder=1,
+                )
+
+                # Add anotation to the plot with the mean and median
+                ax.annotate(
+                    f"\u03B4: {value['quadratic_sum_deviation']:.1f}",
+                    xy=(0.90, 0.005),
+                    xycoords="axes fraction",
+                    fontsize=14,
+                    horizontalalignment="center",
+                    verticalalignment="center",
+                    color="White",
+                    # Add a background to the text
+                    bbox=dict(
+                        facecolor="black",
+                        alpha=0.7,
+                        boxstyle="round,pad=0.5",
+                        edgecolor="none",
+                    ),
+                )
+
+                # Save the figure if savefig is True, show otherwise
+                if savefig:
+                    key = key.replace("/", "-")
+                    fig.savefig(
+                        f"{counter} - polar_hist_street_orientation_{key}.pdf", dpi=dpi
+                    )
+                else:
+                    plt.show()
+                plt.close()
 
         return None
 
     # Export methods
 
     def save_graphs_to_shapefile(self, path):
-        """_summary_
+        """Saves the graphs to a shapefile.
 
         Parameters
         ----------
@@ -521,46 +689,78 @@ class geometry:
 
         return None
 
-    def export_summary(self, path):
+    def export_street_orientation_to_csv(self, filename):
+        """Exports the street orientation to a csv file.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to be exported.
+
+        Returns
+        -------
+        None
+        """
+
+        export_dict = {}
+        for key, value in self.street_orientation_dict.items():
+            export_dict[key] = {
+                "mean": value["mean"].round(3),
+                "std": value["std"].round(3),
+                "number_of_edges": (value["uniform_value"] * 18).round(3),
+                "quadratic_sum_deviation": value["quadratic_sum_deviation"].round(3),
+                "dominant_direction": str(value["dominant_direction"]),
+                "dominant_percentage": value["dominant_percentage"].round(3),
+                "second_dominant_direction": str(value["second_dominant_direction"]),
+                "second_dominant_percentage": value["second_dominant_percentage"].round(
+                    3
+                ),
+                "mean_deviation": value["mean_deviation"].round(3),
+                "quadratic_sum_deviation": value["quadratic_sum_deviation"].round(3),
+                "skew": value["skew"].round(3),
+                "kurtosis": value["kurt"].round(3),
+            }
+
+        df = pd.DataFrame.from_dict(export_dict, orient="index")
+        df.to_csv(filename)
+
+        return None
+
+    def export_basic_stats_to_csv(self, filename):
         """_summary_
 
         Parameters
         ----------
-        path : str
-            The path to save the shapefile. This should not include the file format.
+        filename : str
+            The filename to save the shapefile. This should not include the file format.
 
         Returns
         -------
-        _type_
-            _description_
+        None
         """
 
-        # Create a dictionary with the summary
-        summary = {
-            "place": self.place,
-            # "number_of_neighborhoods": self.number_of_neighborhoods,
-            # "number_of_census_tracts": self.number_of_census_tracts,
-            # "number_of_major_roads": self.number_of_major_roads,
-            # "number_of_minor_roads": self.number_of_minor_roads,
-            # "number_of_major_nodes": self.number_of_major_nodes,
-            # "number_of_minor_nodes": self.number_of_minor_nodes,
-            # "number_of_major_edges": self.number_of_major_edges,
-            # "number_of_minor_edges": self.number_of_minor_edges,
-            # "number_of_major_graphs": self.number_of_major_graphs,
-            # "number_of_minor_graphs": self.number_of_minor_graphs,
-            # "number_of_major_graph_nodes": self.number_of_major_graph_nodes,
-            # "number_of_minor_graph_nodes": self.number_of_minor_graph_nodes,
-            # "number_of_major_graph_edges": self.number_of_major_graph_edges,
-            # "number_of_minor_graph_edges": self.number_of_minor_graph_edges,
-        }
+        export_dict = {}
 
-        # Save the dictionary as a json file
-        with open(path, "w") as file:
-            json.dump(summary, file)
+        for key, value in self.stats_dict.items():
+            export_dict[key] = {
+                "count_of_nodes_in_graph": value["n"],
+                "count_of_edges_in_graph": value["m"],
+                "k_avg": round(value["k_avg"], 3),
+                "edge_length_total": round(value["edge_length_total"], 3),
+                "edge_length_avg": round(value["edge_length_avg"], 3),
+                "streets_per_node_avg": round(value["streets_per_node_avg"], 3),
+                # "streets_per_node_counts": value["streets_per_node_counts"],
+                # "streets_per_node_proportions": value["streets_per_node_proportions"],
+                "intersection_count": value["intersection_count"],
+                "street_length_total": round(value["street_length_total"], 3),
+                "street_segment_count": value["street_segment_count"],
+                "street_length_avg": round(value["street_length_avg"], 3),
+                "circuity_avg": round(value["circuity_avg"], 3),
+                "self_loop_proportion": round(value["self_loop_proportion"], 3),
+            }
 
-        # Save the dictionary as a csv file
-        with open(path + ".csv", "w") as file:
-            pass
+        df = pd.DataFrame.from_dict(export_dict, orient="index")
+        df.to_csv(filename)
 
         return None
 
