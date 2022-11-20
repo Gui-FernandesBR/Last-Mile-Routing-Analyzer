@@ -46,3 +46,6 @@ venv2/
 # OSM caches
 cache
 VRP-street-network.code-workspace
+
+# Amazon S3
+amazon-last-mile-challenges
