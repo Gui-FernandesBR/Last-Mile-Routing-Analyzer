@@ -2,7 +2,6 @@ __author__ = "Guilherme Fernandes Alves"
 __email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 
-import json
 import os
 from time import process_time
 
@@ -128,7 +127,7 @@ class geometry:
         self.geo_data_frame = gpd.read_file(self.shapefile)  # .shp extension
         self.number_of_polygons = len(self.geo_data_frame.values)
 
-        self.__create_multiple_graphs(keys="name", values="geometry")
+        self.__create_multiple_graphs(keys="Name", values="geometry")
 
         return None
 
