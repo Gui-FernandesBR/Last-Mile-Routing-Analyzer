@@ -162,6 +162,8 @@ class amz_serializer:
         # planned_service_time_seconds
         # dimensions[depth_cm, height_cm, width_cm]
 
+        # TODO: Add remaining attributes to the package object
+
         return packages_dict
 
     def serialize_routes(self, routes_dict, packages_dict, bbox_list=None):
@@ -372,6 +374,7 @@ class amz_serializer:
         return actual_sequences
 
     def serialize_travel_times(self, travel_times):
+        # TODO: Implement travel times serialization
         return None
 
     def serialize_all(self, root_directory):
@@ -445,7 +448,6 @@ class amz_serializer:
             "r",
         ) as outfile:
             db_ac_sequences = json.load(outfile)
-        outfile.close()
         ac_sequences_dict = db_ac_sequences.copy()
 
         ## Serialize the actual sequences
@@ -463,13 +465,32 @@ class amz_serializer:
         )
 
         # Read the travel times data
-        # TODO: Implement this
+        self.serialize_travel_times(travel_times=None)
 
         print(
             "We are ready to proceed. All files have been loaded in {:.2f} seconds.".format(
                 time.time() - start
             )
         )
+
+        return None
+
+    def print_info_by_city(self):
+        """Prints the number of routes by city.
+
+        Returns
+        -------
+        None
+        """
+        s = 0
+        for city, dict in self.routes_dict.items():
+            print(f"Number of routes in {city:12}: {len(dict)}")
+            s += len(dict)
+        print(f"Total number of routes: {s:13}\n")
+
+        # Print the percentage of each city
+        for city, dict in self.routes_dict.items():
+            print(f"Percentage of routes in {city:12}: {len(dict) / s * 100:.2f}%")
 
         return None
 
@@ -504,4 +525,30 @@ class amz_serializer:
             )
         )
 
+        # Print information separated by city
+        print("Routes by city:")
+        self.print_info_by_city(self.routes_dict)
+
         return None
+
+    def export_routes_to_csv(
+        self, city: str = "Los Angeles", filename="routes.csv"
+    ) -> None:
+        # Write Los Angeles coordinates to a file
+        with open(filename, "w") as f:
+            # Write header
+            f.write("route,stop,lat,lon,distance_to_next_stop(km),duration(min)\n")
+            # Iterate over routes
+            for route in self.routes_dict[city].values():
+                for stop in route.actual_sequence:
+                    f.write(
+                        "{},{},{},{},-,-\n".format(
+                            route.name, stop.name, stop.location[0], stop.location[1]
+                        )
+                    )
+
+        return None
+
+
+# TODO: Improve print methods
+# TODO: Double check code efficiency and speed up
