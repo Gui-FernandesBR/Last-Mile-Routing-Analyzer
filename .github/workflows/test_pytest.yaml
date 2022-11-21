@@ -1,39 +1,34 @@
-# Sorces: https://github.com/codecov/codecov-action
-name: PyTest
-
-on: [pull_request]
-
+# This workflow will install dependencies, create coverage tests and run Pytest Coverage Comment
+# For more information see: https://github.com/MishaKav/pytest-coverage-comment/
+name: pytest-coverage-comment
+on:
+  pull_request:
+    branches:
+      - '*'
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - windows-latest
-        python-version:
-          - 3.7
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements_tests.txt
-    - name: Build lmr_analyzer
-      run: |
-        python setup.py install
-    - name: Generate coverage report
-      run: |
-        pytest --cov=./ --cov-report=xml
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        directory: ./coverage/reports/
-        env_vars: OS,PYTHON
-        path_to_write_report: ./coverage/codecov_report.txt
-        verbose: true
-        
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+      - name: Build coverage file
+        run: |
+          pytest --junitxml=pytest.xml --cov-report=term-missing:skip-covered --cov=app tests/ | tee pytest-coverage.txt
+
+      - name: Pytest coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-coverage-path: ./pytest-coverage.txt
+          junitxml-path: ./pytest.xml
