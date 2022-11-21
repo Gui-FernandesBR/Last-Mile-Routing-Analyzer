@@ -25,7 +25,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install -r requirements_tests.txt
-    - name: Build RocketPy
+    - name: Build lmr_analyzer
       run: |
         python setup.py install
     - name: Generate coverage report
