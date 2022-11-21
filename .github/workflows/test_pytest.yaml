@@ -1,7 +1,7 @@
 # Sorces: https://github.com/codecov/codecov-action
 name: PyTest
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   build:

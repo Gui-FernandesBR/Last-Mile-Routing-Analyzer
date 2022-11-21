@@ -25,4 +25,5 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     python_requires=">=3.6",
     install_requires=required,
+    install_lib="lmr_analyzer",
 )
