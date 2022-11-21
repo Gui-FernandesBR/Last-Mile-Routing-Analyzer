@@ -4,7 +4,16 @@ __license__ = "Mozilla Public License 2.0"
 
 
 class package:
-    def __init__(self, name, dimensions, status, weight=0, price=0):
+    """Class to store package information"""
+
+    def __init__(
+        self,
+        name: str,
+        dimensions: tuple,
+        status: str,
+        weight: float = 0,
+        price: float = 0,
+    ):
         """_summary_
 
         Parameters
