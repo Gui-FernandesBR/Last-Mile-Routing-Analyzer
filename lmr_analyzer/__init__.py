@@ -9,5 +9,5 @@ from .geometry import geometry
 from .package import package
 from .route import route
 from .stop import stop
-from .utilities import *
+from .utils import *
 from .vehicle import vehicle
