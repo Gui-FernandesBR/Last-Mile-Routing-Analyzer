@@ -7,8 +7,10 @@ cloudpickle
 pandas
 IPython
 numpy
-googlemaps
 networkx
 requests
 boto3
 awscli
+IPython
+shapely
+scipy

@@ -13,7 +13,7 @@ import osmnx as ox
 import pandas as pd
 from IPython.display import display
 
-plt.style.use("seaborn-v0_8-dark-palette")
+# plt.style.use("seaborn-v0_8-dark-palette")
 
 
 class geometry:

@@ -2,6 +2,7 @@ __author__ = "Guilherme Fernandes Alves"
 __email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 
+import numpy as np
 from .package import package
 
 
@@ -148,6 +149,7 @@ class stop:
             The total volume of the packages at the stop.
         """
         # Count the total volume of the packages
+        a = sum([package.volume for package in self.packages_list])
         return sum([package.volume for package in self.packages_list])
 
     @property
@@ -230,13 +232,8 @@ class stop:
             The total volume of the packages at the stop.
         """
         # Count the total volume of the packages
-        return sum(
-            [
-                package.volume
-                for package in self.packages_list
-                if package.status == "to-be-delivered"
-            ]
-        )
+        volume_list = [package.volume for package in self.packages_list]
+        return np.sum(volume_list)
 
     @property
     def total_weight_of_packages(self) -> float:

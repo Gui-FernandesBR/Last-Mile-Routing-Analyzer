@@ -13,7 +13,7 @@ from scipy.spatial import ConvexHull
 from shapely.geometry import Point, Polygon
 
 from .stop import stop
-from .utilities import get_distance
+from .utils import get_distance
 
 
 class route:
