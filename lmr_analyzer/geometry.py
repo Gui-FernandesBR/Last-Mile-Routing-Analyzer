@@ -22,7 +22,7 @@ class geometry:
 
     """
 
-    def __init__(self, name, place=None, shapefile=None, bbox=None):
+    def __init__(self, name, place=None, shapefile=None, bbox=None, graph_key="Name"):
         """Initialize the geometry class.
 
         Parameters
@@ -48,7 +48,7 @@ class geometry:
         """
 
         # Save arguments as attributes
-        self.name = name
+        self.name, self.graph_key = name, graph_key
         self.place, self.shapefile, self.bbox = (place, shapefile, bbox)
 
         # Create the major graph
@@ -127,7 +127,7 @@ class geometry:
         self.geo_data_frame = gpd.read_file(self.shapefile)  # .shp extension
         self.number_of_polygons = len(self.geo_data_frame.values)
 
-        self.__create_multiple_graphs(keys="Name", values="geometry")
+        self.__create_multiple_graphs(keys=self.graph_key, values="geometry")
 
         return None
 
@@ -251,12 +251,17 @@ class geometry:
         output = display("Starting", display_id=True)
 
         for key, value in self.graphs.items():
-            self.stats_dict[key] = ox.stats.basic_stats(
-                value, area=None, clean_int_tol=None
-            )
-            output.update(
-                f"Basic statistics for '{key}' calculated! Completed: {len(self.stats_dict)} of {self.number_of_polygons}",
-            )
+            try:
+                self.stats_dict[key] = ox.stats.basic_stats(
+                    value, area=None, clean_int_tol=None
+                )
+                output.update(
+                    f"Basic statistics for '{key}' calculated! Completed: {len(self.stats_dict)} of {self.number_of_polygons}",
+                )
+            except Exception as e:
+                print(f"Error with {key}.")
+                print(e)
+                self.stats_dict[key] = None
         # TODO: Discover how to get the area of the graph
 
         output.update(
@@ -316,7 +321,13 @@ class geometry:
             output.update(
                 f"Street orientation for '{key}' calculated! Completed: {len(street_orientation_dict)} of {self.number_of_polygons}",
             )
-            graph = ox.add_edge_bearings(graph)
+            try:
+                graph = ox.add_edge_bearings(graph)
+            except Exception as e:
+                print(f"Error with {key}.")
+                print(e)
+                street_orientation_dict[key] = None
+                continue
 
             bearings = pd.Series(
                 [data["bearing"] for _, _, _, data in graph.edges(keys=True, data=True)]
