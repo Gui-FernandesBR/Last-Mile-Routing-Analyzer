@@ -8,7 +8,7 @@ import json
 import numpy as np
 
 
-class distance_matrix:
+class distanceMatrix:
     """A class to either calculate or load distance matrices. A distance matrix
     is used to store the distance between each origin and destination node.
     Usually, the computation of such matrices is very expensive, so it is
