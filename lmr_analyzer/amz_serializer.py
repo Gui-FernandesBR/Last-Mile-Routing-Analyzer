@@ -60,7 +60,7 @@ class bbox:
         return None
 
 
-class amz_serializer:
+class amzSerializer:
     """A serializer for the Amazon data. The serializer is used to convert the
     Amazon data into a format that can be used by the LMR algorithm.
 
