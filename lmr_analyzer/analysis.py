@@ -277,7 +277,7 @@ class analysis:
             "number_of_delivered_packages": self.number_of_delivered_packages,
             "delivered_packages_percentage": self.delivered_packages_percentage,
             "number_of_failed_attempted_packages": self.number_of_failed_attempted_packages,
-            "attempted_packages_percentage": self.attempted_packages_percentage,
+            "failed_attempted_packages_percentage": self.failed_attempted_packages_percentage,
             "number_of_rejected_packages": self.number_of_rejected_packages,
             "rejected_packages_percentage": self.rejected_packages_percentage,
             "max_number_of_delivery_stops": self.max_number_of_delivery_stops,
