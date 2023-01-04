@@ -52,7 +52,7 @@ The tool was developed in Python and it is able to analyze the last mile routing
 
 ## Installation
 
-First you need to certify that you have [Python 3.8](https://www.python.org/downloads/release/python-380/) installed.
+First you need to certify that you have [Python 3.9](https://www.python.org/downloads/release/python-380/) installed.
 
 Then you can install the package using pip:
 
