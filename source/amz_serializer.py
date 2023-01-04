@@ -475,6 +475,107 @@ class amzSerializer:
 
         return None
 
+    def time_history_analysis(self, routes_dict):
+        la_times = []
+        for route in routes_dict["Los Angeles"].values():
+            # Add departure time and number of stops to the list
+            la_times.append([route.departure_time, len(route.stops)])
+            # break
+
+        boston_times = []
+        for route in routes_dict["Boston"].values():
+            # Add departure time and number of stops to the list
+            boston_times.append([route.departure_time, len(route.stops)])
+            # break
+
+        austin_times = []
+        for route in routes_dict["Austin"].values():
+            # Add departure time and number of stops to the list
+            austin_times.append([route.departure_time, len(route.stops)])
+            # break
+
+        chicago_times = []
+        for route in routes_dict["Chicago"].values():
+            # Add departure time and number of stops to the list
+            chicago_times.append([route.departure_time, len(route.stops)])
+            # break
+
+        seattle_times = []
+        for route in routes_dict["Seattle"].values():
+            # Add departure time and number of stops to the list
+            seattle_times.append([route.departure_time, len(route.stops)])
+            # break
+
+        # Summarize la_times by day
+        la_times_by_day = {}
+        for time, stops in la_times:
+            day = time.date()
+            if day not in la_times_by_day:
+                la_times_by_day[day] = 0
+            la_times_by_day[day] += stops
+
+        # Summarize boston_times by day
+        boston_times_by_day = {}
+        for time, stops in boston_times:
+            day = time.date()
+            if day not in boston_times_by_day:
+                boston_times_by_day[day] = 0
+            boston_times_by_day[day] += stops
+
+        # Summarize austin_times by day
+        austin_times_by_day = {}
+        for time, stops in austin_times:
+            day = time.date()
+            if day not in austin_times_by_day:
+                austin_times_by_day[day] = 0
+            austin_times_by_day[day] += stops
+
+        # Summarize chicago_times by day
+        chicago_times_by_day = {}
+        for time, stops in chicago_times:
+            day = time.date()
+            if day not in chicago_times_by_day:
+                chicago_times_by_day[day] = 0
+            chicago_times_by_day[day] += stops
+
+        # Summarize seattle_times by day
+        seattle_times_by_day = {}
+        for time, stops in seattle_times:
+            day = time.date()
+            if day not in seattle_times_by_day:
+                seattle_times_by_day[day] = 0
+            seattle_times_by_day[day] += stops
+
+        self.time_range = min(chicago_times_by_day.keys()), max(
+            chicago_times_by_day.keys()
+        )
+
+        return (
+            la_times_by_day,
+            boston_times_by_day,
+            austin_times_by_day,
+            chicago_times_by_day,
+            seattle_times_by_day,
+        )
+
+    def plot_time_analysis(self, routes_dict):
+        # Plot the number of stops by day
+        import matplotlib.pyplot as plt
+
+        plt.figure(figsize=(8, 4))
+        plt.bar(routes_dict.keys(), routes_dict.values())
+        plt.xticks(rotation=45)
+        # plt.xlabel("Day")
+        plt.ylabel("Number of deliveries")
+        plt.title("Number of deliveries per day in Los Angeles")
+        # plt.xlim(min(routes_dict.keys()), max(routes_dict.keys()))
+        plt.xlim(datetime(2018, 7, 14), datetime(2018, 9, 1))
+        plt.ylim(0, 25000)
+        plt.show()
+        # plt.savefig(filename, dpi=300)
+
+        return None
+
     def print_info_by_city(self):
         """Prints the number of routes by city.
 

@@ -503,3 +503,6 @@ class analysis:
         df.to_csv(filename)
 
         return None
+
+
+# TODO: Plot the % rejection vs Circuity factor per route/neighborhood
