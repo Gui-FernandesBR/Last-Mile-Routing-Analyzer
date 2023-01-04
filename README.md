@@ -1,4 +1,5 @@
-# Last-Mile-Routing-Analyzer    [![DOI](https://zenodo.org/badge/509784638.svg)](https://zenodo.org/badge/latestdoi/509784638) [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![CodeFactor](https://www.codefactor.io/repository/github/gui-fernandesbr/last-mile-routing-analyzer/badge/develop)](https://www.codefactor.io/repository/github/gui-fernandesbr/last-mile-routing-analyzer/overview/develop)
+# Last-Mile-Routing-Analyzer
+[![DOI](https://zenodo.org/badge/509784638.svg)](https://zenodo.org/badge/latestdoi/509784638) [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![CodeFactor](https://www.codefactor.io/repository/github/gui-fernandesbr/last-mile-routing-analyzer/badge/develop)](https://www.codefactor.io/repository/github/gui-fernandesbr/last-mile-routing-analyzer/overview/develop)
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/63590233/177072115-5d0d09b3-8bc1-4aba-8120-e98d5b40f29b.png" alt="drawing" width="200"/> <img src="https://user-images.githubusercontent.com/63590233/177072146-767b5f36-4f95-4a7c-8611-00618f7b05ef.png" alt="drawing" width="200"/></p>
@@ -6,14 +7,16 @@
 <p align="center">
 <img src="https://user-images.githubusercontent.com/63590233/177072382-be5e9814-3f9d-4e67-94f6-7e3a005068f0.png" alt="drawing" width="150"/> <img src="https://user-images.githubusercontent.com/63590233/177072593-8de9a8bd-b17b-4be3-8cbc-0cb14c1ddb57.png" alt="drawing" width="200"/></p>
 
-- [Last-Mile-Routing-Analyzer      ](#last-mile-routing-analyzer------)
+## Table of Contents
+- [Last-Mile-Routing-Analyzer](#last-mile-routing-analyzer)
+  - [Table of Contents](#table-of-contents)
   - [Motivation](#motivation)
   - [Features:](#features)
   - [Installation](#installation)
-  - [Getting started with examples:](#getting-started-with-examples)
-  - [Read the documentation:](#read-the-documentation)
-  - [Directory Structure:](#directory-structure)
-  - [Library Structure:](#library-structure)
+  - [Getting started with examples](#getting-started-with-examples)
+  - [Read the documentation](#read-the-documentation)
+  - [Directory Structure](#directory-structure)
+  - [Library Structure](#library-structure)
   - [Data folder description](#data-folder-description)
   - [Contributing](#contributing)
   - [License](#license)
@@ -31,10 +34,20 @@
 ## Features:
 
 The tool was developed in Python and it is able to analyze the last mile routing problems in a city, considering the following aspects:
-- The distance between the origin and the destination, considering the shortest driving path and the euclidean distance;
-- Street Orientation statistics for different neighborhoods;
-- The number of streets that are not connected to the main street network;
-- The dimensions and arrangement of all the street networks in the city; 
+- **Last Mile routing data**
+  - Distance between origin and the destination
+    - Shortest driving path and the 
+    - euclidean distance by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) formula;
+  - Routes center of gravity
+  - Percentage of rejected deliveries, and failed attempts 
+- **Street networks geometry**:
+  - Street Network density statistics for different neighborhoods:
+    - Node density, edge density, self-loop proportion
+    - Street total length, average street length
+    - etc.
+  - Street Network **connectivity** and **orientation** statistics for different neighborhoods:
+    - Node degree
+    - Polar plots of street orientation
 
 
 ## Installation
@@ -47,7 +60,9 @@ Then you can install the package using pip:
 pip install git+https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/lmr_analyzer.git
 ```	
 
-## Getting started with examples:
+The package will automatically install the dependencies listed at [requirements.txt]() file.
+
+## Getting started with examples
 
 Here are some of the examples that you can run to get started with the package:
 
@@ -55,12 +70,12 @@ Here are some of the examples that you can run to get started with the package:
 
 * [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/blob/master/docs/notebooks/lmr_analyzer/geometry_class_example.ipynb) - Example over Los Angeles city using the geometry class.
 
-## Read the documentation:
+## Read the documentation
 
 The documentation is still under development, please be patient.
 You can check the current docstring of each method and class individually.
 
-## Directory Structure:
+## Directory Structure
 
 The repository is organized as follows:
 
@@ -81,7 +96,7 @@ The repository is organized as follows:
 ```	
 
 
-## Library Structure:
+## Library Structure
 
 The lmr_analyzer package is organized as follows:
 
@@ -134,11 +149,12 @@ If you use this package in your research, please cite it as:
 
 @misc{alves-lmr,
   author = {Guilherme Fernandes Alves},
-  title = {lmr_analyzer: Last Mile Routing Analyzer},
+  title = {Last Mile Routing Analyzer: a powerful toolkit to analyze the interaction between last mile operations and the street network design.},
   year = {2023},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{}}
+  howpublished = {\url{https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer}},
+  doi = {10.5281/zenodo.6792976}
 }
 
 ```	
