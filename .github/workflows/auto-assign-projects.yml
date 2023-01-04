@@ -1,0 +1,22 @@
+name: Auto Assign to Project(s)
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  assign_one_project:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign to Project
+        uses:
+          github/issue-project@v1
+        with:
+          project: 'lmr_management'
+          issue_number: ${{ github.event.issue.number || github.event.pull_request.number }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          
