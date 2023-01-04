@@ -15,7 +15,7 @@ import requests
 def Haversine(lat1, lon1, lat2, lon2):
     """
     Calculate the great circle distance between two points
-    on the earth (specified in decimal degrees)
+    on the Earth (specified in decimal degrees)
 
     Parameters
     ----------
@@ -99,24 +99,26 @@ def drive_distance_gmaps(origin, destination, api_key):
     return (distance, duration)
 
 
-def drive_distance_osm(origin, destination, session=None):
+def drive_distance_osm(origin: tuple, destination: tuple, session=None) -> tuple:
     """Calculate the driving distance between two points using OSM API.
     Internet connection is required.
 
     Parameters
     ----------
     origin : tuple
-        The origin point coordinates. The coordinates must be in the form (lat, lon).
+        The origin point coordinates. The coordinates must be as (lat, lon).
     destination : tuple
-        The destination point coordinates. The coordinates must be in the form (lat, lon).
+        The destination point coordinates. The coordinates must be as (lat, lon).
     session : requests.Session
-        The session to be used to make the request. If None, a new session will be created. This can be used to reuse the same session for multiple requests, which can impact performance.
+        The session to be used to make the request. If None, a new session will
+        be created. This can be used to reuse the same session for multiple
+        requests, which can impact performance.
 
     Returns
     -------
     (distance, duration) : tuple
-        The distance and duration of the shortest path between the origin and destination points.
-        The distance is in meters and the duration is in minutes.
+        The distance and duration of the shortest path between the origin and
+        destination points. The distance is in meters and the duration is in minutes.
     """
 
     # start = time.time()
@@ -140,18 +142,10 @@ def drive_distance_osm(origin, destination, session=None):
             )
         )
 
-    # Get the route length and duration and convert to km and minutes, respectively
+    # Get the route length and duration and convert to km and minutes
     duration = res["routes"][0]["duration"] / 60  # in minutes
     distance = res["routes"][0]["distance"] / 1000  # in km
-    # geometry = polyline.decode(res["routes"][0]["geometry"])
 
-    # Return a tuple with the route length and duration
-    # end = time.time()
-    # print(
-    #     "OSM API request took {} seconds to catch driving distance from {} to {}".format(
-    #         end - start, origin, destination
-    #     )
-    # )
     return (distance, duration)
 
 

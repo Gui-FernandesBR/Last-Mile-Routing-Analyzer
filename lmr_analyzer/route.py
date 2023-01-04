@@ -650,7 +650,6 @@ class route:
                 ]
             )
             # Calculate remaining attributes
-            self.mean_planned_circuity_factor = np.mean(self.planned_circuity_factors)
             self.max_planned_circuity_factor = np.max(self.planned_circuity_factors)
             self.min_planned_circuity_factor = np.min(self.planned_circuity_factors)
             self.total_planned_circuity_factor = (
@@ -745,6 +744,10 @@ class route:
                 / (2 * np.pi)
             )  # 6371 is the radius of the earth in km, area in km^2
 
+            self.actual_bbox_aspect_ratio = (
+                self.actual_bbox[2] - self.actual_bbox[0]
+            ) / (self.actual_bbox[3] - self.actual_bbox[1])
+
             print("Awesome! I found the bounding box of the actual sequence.")
         except AttributeError:
             warnings.warn("Could not find the bounding box of the actual sequence.")
@@ -827,6 +830,8 @@ class route:
             self.actual_mrr = self.minimum_rotated_rectangle(
                 [x.location for x in self.actual_sequence]
             )
+            self.actual_mrr_area = self.actual_mrr.area
+            self.actual_mrr_aspect_ratio = 0
             print("Awesome! I found the minimum rotated rectangle of the actual route!")
         except AttributeError:
             warnings.warn("Could not find the minimum rotated rectangle of the actual.")
