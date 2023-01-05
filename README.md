@@ -2,10 +2,10 @@
 [![DOI](https://zenodo.org/badge/509784638.svg)](https://zenodo.org/badge/latestdoi/509784638) [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![CodeFactor](https://www.codefactor.io/repository/github/gui-fernandesbr/last-mile-routing-analyzer/badge/develop)](https://www.codefactor.io/repository/github/gui-fernandesbr/last-mile-routing-analyzer/overview/develop)
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/63590233/177072115-5d0d09b3-8bc1-4aba-8120-e98d5b40f29b.png" alt="drawing" width="200"/> <img src="https://user-images.githubusercontent.com/63590233/177072146-767b5f36-4f95-4a7c-8611-00618f7b05ef.png" alt="drawing" width="200"/></p>
+<img src="https://user-images.githubusercontent.com/63590233/177072115-5d0d09b3-8bc1-4aba-8120-e98d5b40f29b.png" alt="drawing" width="350"/> <img src="https://user-images.githubusercontent.com/63590233/177072146-767b5f36-4f95-4a7c-8611-00618f7b05ef.png" alt="drawing" width="350"/></p>
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/63590233/177072382-be5e9814-3f9d-4e67-94f6-7e3a005068f0.png" alt="drawing" width="150"/> <img src="https://user-images.githubusercontent.com/63590233/177072593-8de9a8bd-b17b-4be3-8cbc-0cb14c1ddb57.png" alt="drawing" width="200"/></p>
+<img src="https://user-images.githubusercontent.com/63590233/177072382-be5e9814-3f9d-4e67-94f6-7e3a005068f0.png" alt="drawing" width="300"/> <img src="https://user-images.githubusercontent.com/63590233/177072593-8de9a8bd-b17b-4be3-8cbc-0cb14c1ddb57.png" alt="drawing" width="400"/></p>
 
 ## Table of Contents
 - [Last-Mile-Routing-Analyzer](#last-mile-routing-analyzer)
@@ -13,10 +13,6 @@
   - [Motivation](#motivation)
   - [Features:](#features)
   - [Installation](#installation)
-  - [Getting started with examples](#getting-started-with-examples)
-  - [Read the documentation](#read-the-documentation)
-  - [Directory Structure](#directory-structure)
-  - [Library Structure](#library-structure)
   - [Data folder description](#data-folder-description)
   - [Contributing](#contributing)
   - [License](#license)
@@ -113,7 +109,47 @@ The lmr_analyzer package is organized as follows:
 
 The architecture of the package is represented by the following diagram:
 
-![image](docs/static/uml/packages.html)
+```mermaid
+
+classDiagram
+    class lmr_analyzer {
+    }
+    class amzSerializer {
+    }
+    class analysis {
+    }
+    class distanceMatrix {
+    }
+    class geometry {
+    }
+    class package {
+    }
+    class route {
+    }
+    class stop {
+    }
+    class utils {
+    }
+    class vehicle {
+    }
+    lmr_analyzer --> amzSerializer
+    lmr_analyzer --> analysis
+    lmr_analyzer --> distanceMatrix
+    lmr_analyzer --> geometry
+    lmr_analyzer --> package
+    lmr_analyzer --> route
+    lmr_analyzer --> stop
+    lmr_analyzer --> utils
+    lmr_analyzer --> vehicle
+    amzSerializer --> package
+    amzSerializer --> route
+    amzSerializer --> stop
+    amzSerializer --> vehicle
+    route --> stop
+    route --> utils
+    stop --> package
+
+```
 
 ## Data folder description
 
@@ -160,5 +196,6 @@ If you use this package in your research, please cite it as:
 ```	
 
 ## Contact
+
 Send a message to the main maintainer to request more details: [Guilherme Fernandes Alves](@Gui-FernandesBR).
 you can find him (i.e. me) by e-mail: `guilherme_fernandes@usp.br` or `gf10.alves@gmail.com`
