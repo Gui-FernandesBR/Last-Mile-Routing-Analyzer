@@ -1,4 +1,5 @@
 # Last-Mile-Routing-Analyzer
+
 [![DOI](https://zenodo.org/badge/509784638.svg)](https://zenodo.org/badge/latestdoi/509784638) [![License: MPL 2.0](https://img.shields.io/badge/License-MPL_2.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0) [![CodeFactor](https://www.codefactor.io/repository/github/gui-fernandesbr/last-mile-routing-analyzer/badge/develop)](https://www.codefactor.io/repository/github/gui-fernandesbr/last-mile-routing-analyzer/overview/develop)
 
 <p align="center">
@@ -11,7 +12,7 @@
 - [Last-Mile-Routing-Analyzer](#last-mile-routing-analyzer)
   - [Table of Contents](#table-of-contents)
   - [Motivation](#motivation)
-  - [Features:](#features)
+  - [Features](#features)
   - [Installation](#installation)
   - [Data folder description](#data-folder-description)
   - [Contributing](#contributing)
@@ -27,15 +28,19 @@
 - The project is still going to be developed and maintained even after the thesis is finished, so any contribution is welcome.
 
 
-## Features:
+## Features
 
 The tool was developed in Python and it is able to analyze the last mile routing problems in a city, considering the following aspects:
+
 - **Last Mile routing data**
   - Distance between origin and the destination
-    - Shortest driving path and the 
+    - Shortest driving path by *Google Maps* API and *OpenStreetMap* API
     - euclidean distance by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) formula;
-  - Routes center of gravity
-  - Percentage of rejected deliveries, and failed attempts 
+  - Characterization of different routes
+    - Center of gravity
+    - Enclosing polygons
+    - Percentage of rejected deliveries, and failed attempts
+  - Integration with Amazon Last Mile Routing data from public [s3 bucket](https://registry.opendata.aws/amazon-last-mile-challenges/)
 - **Street networks geometry**:
   - Street Network density statistics for different neighborhoods:
     - Node density, edge density, self-loop proportion
