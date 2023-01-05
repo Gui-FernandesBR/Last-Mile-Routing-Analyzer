@@ -14,6 +14,9 @@
   - [Motivation](#motivation)
   - [Features](#features)
   - [Installation](#installation)
+  - [Getting started with examples](#getting-started-with-examples)
+  - [Read the documentation](#read-the-documentation)
+  - [Directory Structure](#directory-structure)
   - [Data folder description](#data-folder-description)
   - [Contributing](#contributing)
   - [License](#license)
@@ -50,16 +53,16 @@ The tool was developed in Python and it is able to analyze the last mile routing
     - Node degree
     - Polar plots of street orientation
 
-
 ## Installation
 
 First you need to certify that you have [Python 3.9](https://www.python.org/downloads/release/python-380/) installed.
 
 Then you can install the package using pip:
 
-```bash	
+```bash
 pip install git+https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/lmr_analyzer.git
-```	
+
+```
 
 The package will automatically install the dependencies listed at [requirements.txt]() file.
 
@@ -101,16 +104,16 @@ The repository is organized as follows:
 
 The lmr_analyzer package is organized as follows:
 
-    __init__.py          - Main module
-    amz_serializer.py    - Amazon S3 data serializer
-    analysis.py          - Analysis module, to analyze a set of routes
-    distance_matrix.py   - Distance Matrix module
-    geometry.py          - Handle with spatial information from shapefiles
-    package.py           - Store package information
-    route.py             - Store route information
-    stop.py              - Store stop information
-    utils.py             - Utilities module to be used on other modules
-    vehicle.py           - Store vehicle information
+  `__init__.py`        - Main module
+  amz_serializer.py    - Amazon S3 data serializer
+  analysis.py          - Analysis module, to analyze a set of routes
+  distance_matrix.py   - Distance Matrix module
+  geometry.py          - Handle with spatial information from shapefiles
+  package.py           - Store package information
+  route.py             - Store route information
+  stop.py              - Store stop information
+  utils.py             - Utilities module to be used on other modules
+  vehicle.py           - Store vehicle information
 
 The architecture of the package is represented by the following diagram:
 
@@ -160,13 +163,27 @@ classDiagram
 
 Due to the large amount of information, the data folder can be a bit confusing, so here is a brief description of what each folder contains:
 
-* data/driving_distances:
-  * A set of csv files containing the driving distances between some pairs of points in the dataset. The files are named as follows: `driving_distances_{dataset_name}.csv`. The dataset name is the same as the name of the folder containing the dataset. 
-* data/shapefiles: 
-  * `los_angeles_majors`: Shapefile containing the major neighborhoods of Los Angeles.
-  * `los_angeles_minors`: Shapefile containing the minor neighborhoods of Los Angeles.
-  * `guarulhos_osm` : geospatial data describing boundaries of all neighborhoods of the Guarulhos city. source: _OpenStreetMap_
-  * `urban_regions_Sao_Paulo`: geospatial data describing land use over state of Sao Paulo. source: unknown
+```bash
+data/
+├── driving_distances/       - Driving distances to be used with Amazon dataset 
+│   ├── austin.csv
+│   ├── boston.csv
+│   ├── ...
+│   └── seattle.csv
+├── results/                 - Results from the examples
+│   ├── dataframes/          - all .csv or .txt files
+│   ├── graph_shapefile/     - gespatial data files
+│   ├── graphs/              - Report of the Graphs generated with the examples
+│   ├── pickles/             - Objects saved as pickle files
+│   └── polar_plots/         - Polar plots generated with the examples
+└── shapefiles/              - geospatial data files
+    ├── austin/              - Neighborhoods of Austin county
+    ├── los_angeles_minors/  - Neighborhoods of Los Angeles county
+    ├── guarulhos_osm/       - Neighborhoods of Guarulhos city
+    ├── ...
+    └── urban_regions_Sao_Paulo/ - Urban regions of Sao Paulo state
+
+```
 
 ## Contributing
 
