@@ -189,7 +189,7 @@ class analysis:
         for route in self.routes_dict.values():
             try:
                 routes_status_dict[route.name] = route.route_status_dict
-            except:
+            except Exception as _:
                 route.evaluate_route_status()
                 routes_status_dict[route.name] = route.route_status_dict
         # Save the dictionary

@@ -486,8 +486,8 @@ class geometry:
                         try:
                             fig.savefig(f"graph_{key}.pdf", dpi=dpi)
                             # print(f"Graph '{key}' saved!")
-                        except:
-                            print(f"Graph '{key}' could not be saved!")
+                        except Exception as e:
+                            print(f"Graph '{key}' could not be saved!" + str(e))
                     else:
                         plt.show()
                     plt.close()

@@ -282,7 +282,7 @@ def get_city_state_names(location, session=None):
 
     try:
         city = res["address"]["city"]
-    except:
+    except KeyError:
         city = res["address"]["county"]
     state = res["address"]["state"]
 
