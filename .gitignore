@@ -21,33 +21,16 @@ var/
 *.egg
 .libs
 
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-
-# Django stuff:
-*.log
-
 # Sphinx documentation
 docs/_build/
 
-# PyBuilder
-target/
-
-# IDE's etc.
-.idea/
-venv/
-venv2/
-.vrp_gui/
-.venv_thesis
+# IDEs ans venvs
 .venv/
-htmlcov
+.vscode/
 
-# OSM caches
+# Caches
 cache
-VRP-street-network.code-workspace
+.pytest_cache/
 
 # Amazon S3
-amazon-last-mile-challenges
+amazon-last-mile-challenges/
