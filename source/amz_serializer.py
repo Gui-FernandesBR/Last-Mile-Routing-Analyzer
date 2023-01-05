@@ -476,76 +476,44 @@ class amzSerializer:
         return None
 
     def time_history_analysis(self, routes_dict):
-        la_times = []
-        for route in routes_dict["Los Angeles"].values():
-            # Add departure time and number of stops to the list
-            la_times.append([route.departure_time, len(route.stops)])
-            # break
+        # Hey, I will document this later
+        la_times = [
+            [r.departure_time, len(r.stops)]
+            for r in routes_dict["Los Angeles"].values()
+        ]
 
-        boston_times = []
-        for route in routes_dict["Boston"].values():
-            # Add departure time and number of stops to the list
-            boston_times.append([route.departure_time, len(route.stops)])
-            # break
+        boston_times = [
+            [r.departure_time, len(r.stops)] for r in routes_dict["Boston"].values()
+        ]
 
-        austin_times = []
-        for route in routes_dict["Austin"].values():
-            # Add departure time and number of stops to the list
-            austin_times.append([route.departure_time, len(route.stops)])
-            # break
+        austin_times = [
+            [r.departure_time, len(r.stops)] for r in routes_dict["Austin"].values()
+        ]
 
-        chicago_times = []
-        for route in routes_dict["Chicago"].values():
-            # Add departure time and number of stops to the list
-            chicago_times.append([route.departure_time, len(route.stops)])
-            # break
+        chicago_times = [
+            [r.departure_time, len(r.stops)] for r in routes_dict["Chicago"].values()
+        ]
 
-        seattle_times = []
-        for route in routes_dict["Seattle"].values():
-            # Add departure time and number of stops to the list
-            seattle_times.append([route.departure_time, len(route.stops)])
-            # break
+        seattle_times = [
+            [r.departure_time, len(r.stops)] for r in routes_dict["Seattle"].values()
+        ]
 
         # Summarize la_times by day
-        la_times_by_day = {}
-        for time, stops in la_times:
-            day = time.date()
-            if day not in la_times_by_day:
-                la_times_by_day[day] = 0
-            la_times_by_day[day] += stops
+        la_times_by_day = self.__create_times_dict(la_times)
 
         # Summarize boston_times by day
-        boston_times_by_day = {}
-        for time, stops in boston_times:
-            day = time.date()
-            if day not in boston_times_by_day:
-                boston_times_by_day[day] = 0
-            boston_times_by_day[day] += stops
+        boston_times_by_day = self.__create_times_dict(boston_times)
 
         # Summarize austin_times by day
-        austin_times_by_day = {}
-        for time, stops in austin_times:
-            day = time.date()
-            if day not in austin_times_by_day:
-                austin_times_by_day[day] = 0
-            austin_times_by_day[day] += stops
+        austin_times_by_day = self.__create_times_dict(austin_times)
 
         # Summarize chicago_times by day
-        chicago_times_by_day = {}
-        for time, stops in chicago_times:
-            day = time.date()
-            if day not in chicago_times_by_day:
-                chicago_times_by_day[day] = 0
-            chicago_times_by_day[day] += stops
+        chicago_times_by_day = self.__create_times_dict(chicago_times)
 
         # Summarize seattle_times by day
-        seattle_times_by_day = {}
-        for time, stops in seattle_times:
-            day = time.date()
-            if day not in seattle_times_by_day:
-                seattle_times_by_day[day] = 0
-            seattle_times_by_day[day] += stops
+        seattle_times_by_day = self.__create_times_dict(seattle_times)
 
+        # Store the time range
         self.time_range = min(chicago_times_by_day.keys()), max(
             chicago_times_by_day.keys()
         )
@@ -557,6 +525,15 @@ class amzSerializer:
             chicago_times_by_day,
             seattle_times_by_day,
         )
+
+    def __create_times_dict(self, times):
+        times_by_day = {}
+        for time, stops in times:
+            day = time.date()
+            if day not in times_by_day:
+                times_by_day[day] = 0
+            times_by_day[day] += stops
+        return times_by_day
 
     def plot_time_analysis(self, routes_dict):
         # Plot the number of stops by day
