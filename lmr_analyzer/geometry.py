@@ -245,7 +245,6 @@ class geometry:
     # Evaluation and manipulation methods
 
     def evaluate_basic_stats(self):
-
         self.stats_dict = {}
         initial_cpu_time = process_time()
         output = display("Starting", display_id=True)
@@ -620,7 +619,6 @@ class geometry:
         """
 
         if not grid:
-
             # First, let's sort the dictionary by the quadratic_sum_deviation
             sorted_dict = {
                 k: v

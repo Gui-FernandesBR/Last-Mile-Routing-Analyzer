@@ -386,7 +386,6 @@ class analysis:
         """
 
         if actual:
-
             # # Plot the circuity factor of the actual routes
             # plt.figure()
             # plt.title("Circuity factor of the actual routes")
