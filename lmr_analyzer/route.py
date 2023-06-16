@@ -472,7 +472,6 @@ class route:
     def __calculate_driving_distances(
         self, sequence: list, name: str, mode="osm", multiprocessing=False
     ) -> None:
-
         session = requests.Session()
         # First check if the sequence is empty
         if len(sequence) == 0:

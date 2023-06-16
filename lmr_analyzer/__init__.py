@@ -1,6 +1,8 @@
+"""Analysis of Last Mile Routing data"""
 __author__ = "Guilherme Fernandes Alves"
 __email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
+__version__ = "1.0.0"
 
 from .amz_serializer import amzSerializer
 from .analysis import analysis

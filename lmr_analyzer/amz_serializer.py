@@ -124,7 +124,6 @@ class amzSerializer:
             for index2, stop_id in enumerate(packages_dict[route_id]):
                 # Iterate through the packages in the current stop
                 for package_id, values in packages_dict[route_id][stop_id].items():
-
                     if isinstance(values, package_class):
                         continue
 
@@ -242,7 +241,6 @@ class amzSerializer:
                 continue
 
             for index2, stop_id in enumerate(routes_dict[route_id]["stops"]):
-
                 if isinstance(routes_dict[route_id]["stops"][stop_id], stop_class):
                     continue
 
