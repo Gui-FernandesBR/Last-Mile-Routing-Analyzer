@@ -11,6 +11,7 @@ import requests
 # Initialize a new session
 session = requests.Session()
 
+
 # Get the data from the API
 def drive_distance_osm(origin, destination, i, n):
     """Calculate the driving distance between two points using OSM API.
