@@ -1,7 +1,6 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
-
+"""The utils.py module contains auxiliary functions that are used by other
+modules of the lmr_analyzer package.
+"""
 import warnings
 from math import asin, cos, radians, sin, sqrt
 
@@ -45,7 +44,7 @@ def Haversine(lat1, lon1, lat2, lon2):
     return km
 
 
-def drive_distance_gmaps(origin, destination, api_key):
+def drive_distance_gmaps(origin, destination, api_key=None):
     """Calculate the driving distance between two points using Google Maps API.
     Internet connection is required. The Google Maps API key must be passed.
 

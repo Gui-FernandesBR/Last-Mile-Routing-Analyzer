@@ -1,6 +1,6 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
+"""This module contains the stop class. A stop is a location where a vehicle
+stops to either pickup or deliver packages. A stop can be a depot, a pickup
+location or a delivery location."""
 
 import numpy as np
 
@@ -36,7 +36,6 @@ class stop:
 
     """
 
-    # TODO: Document the class and its methods.
     def __init__(
         self, name, location, location_type, time_window, planned_service_time, packages
     ):
@@ -89,7 +88,8 @@ class stop:
         # Check if location type is valid
         if location_type not in ["depot", "pickup", "delivery"]:
             raise ValueError(
-                "Invalid stop location type: must be one of the following: 'depot', 'pickup', 'delivery'."
+                "Invalid stop location type: must be one of the following: "
+                + "'depot', 'pickup', 'delivery'."
             )
 
         # Evaluate other attributes
@@ -106,14 +106,25 @@ class stop:
         # The self.status_list will be used by the properties
         self.status_list = [package.status for package in self.packages_list]
 
-        return None
-
     @property
     def delivery_time(self):
+        """Returns the delivery time of the stop.
+
+        Returns
+        -------
+        float
+        """
         return self.time_window[1] - self.time_window[0]
 
     @property
     def number_of_delivered_packages(self) -> int:
+        """Returns the number of delivered packages at the stop.
+
+        Returns
+        -------
+        int
+            The number of delivered packages at the stop.
+        """
         return self.status_list.count("delivered")
 
     @property
@@ -139,19 +150,6 @@ class stop:
         """
         # Count the number of packages
         return len(self.packages)
-
-    @property
-    def total_volume_of_packages(self) -> float:
-        """Returns the total volume of the packages at the stop.
-
-        Returns
-        -------
-        float
-            The total volume of the packages at the stop.
-        """
-        # Count the total volume of the packages
-        a = sum([package.volume for package in self.packages_list])
-        return sum([package.volume for package in self.packages_list])
 
     @property
     def average_volume_of_packages(self) -> float:

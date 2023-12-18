@@ -1,6 +1,7 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
+"""This module contains the package class, which is used to store information
+about a package. A package is understood as a product that is to be delivered
+to a customer.
+"""
 
 
 class package:
@@ -14,7 +15,7 @@ class package:
         weight: float = 0,
         price: float = 0,
     ):
-        """_summary_
+        """Initializes the package object.
 
         Parameters
         ----------
@@ -44,10 +45,9 @@ class package:
         # Check if status is valid
         if status not in ["to-be-delivered", "rejected", "attempted", "delivered"]:
             raise ValueError(
-                "Invalid package status: must be one of the following: 'to-be-delivered', 'rejected', 'attempted', 'delivered'."
+                "Invalid package status: must be one of the following: "
+                + "'to-be-delivered', 'rejected', 'attempted', 'delivered'."
             )
-
-        return None
 
     @property
     def volume(self):
@@ -78,7 +78,6 @@ class package:
         None
         """
         self.status = status
-        return None
 
     def print_info(self):
         """Prints the package information.
@@ -88,6 +87,7 @@ class package:
         None
         """
         print(
-            f"Package name: {self.name}\nDimensions: {self.dimensions}\nStatus: {self.status}\nWeight: {self.weight}\nPrice: {self.price}\nVolume: {self.volume}"
+            f"Package name: {self.name}\nDimensions: {self.dimensions}\nStatus: "
+            + f"{self.status}\nWeight: {self.weight}\nPrice: {self.price}\n"
+            + f"Volume: {self.volume}"
         )
-        return None

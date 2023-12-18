@@ -1,6 +1,8 @@
-__author__ = "Guilherme Fernandes Alves"
-__license__ = "Mozilla Public License 2.0"
-
+"""This module contains the Amazon Serializer class and the bbox class. The
+Amazon Serializer class is used to convert the Amazon data into a format that
+can be used by the LMR algorithm. The bbox class is an auxiliary class used to
+store bounding box information.
+"""
 import json
 import time
 from datetime import datetime
@@ -57,10 +59,8 @@ class bbox:
         self.lat_max = max(lat1, lat2)
         self.lon_max = max(lon1, lon2)
 
-        return None
 
-
-class amzSerializer:
+class AmzSerializer:
     """A serializer for the Amazon data. The serializer is used to convert the
     Amazon data into a format that can be used by the LMR algorithm.
 
@@ -94,8 +94,6 @@ class amzSerializer:
         # TODO: Check contents on the directory before loading the data
 
         self.serialize_all(root_directory)
-
-        return None
 
     def serialize_packages(self, packages_dict):
         """Serializes a package object into a dictionary. The dictionary can be
@@ -371,9 +369,9 @@ class amzSerializer:
 
         return actual_sequences
 
-    def serialize_travel_times(self, travel_times):
-        # TODO: Implement travel times serialization
-        return None
+    # def serialize_travel_times(self, travel_times):
+    #     # TODO: Implement travel times serialization
+    #     return None
 
     def serialize_all(self, root_directory):
         """Serializes all the files in the root directory.
@@ -391,8 +389,7 @@ class amzSerializer:
 
         # Read the package data
         with open(
-            f"{root_directory}/package_data.json",
-            "r",
+            f"{root_directory}/package_data.json", "r", encoding="utf8"
         ) as outfile:
             db_package = json.load(outfile)
         outfile.close()
@@ -418,10 +415,7 @@ class amzSerializer:
         )
 
         # Read the route data
-        with open(
-            f"{root_directory}/route_data.json",
-            "r",
-        ) as outfile:
+        with open(f"{root_directory}/route_data.json", "r", encoding="utf8") as outfile:
             db_route = json.load(outfile)
         outfile.close()
         routes_dict = db_route.copy()
@@ -442,8 +436,7 @@ class amzSerializer:
 
         # Read the actual sequences
         with open(
-            f"{root_directory}/actual_sequences.json",
-            "r",
+            f"{root_directory}/actual_sequences.json", "r", encoding="utf8"
         ) as outfile:
             db_ac_sequences = json.load(outfile)
         ac_sequences_dict = db_ac_sequences.copy()
@@ -474,6 +467,18 @@ class amzSerializer:
         return None
 
     def time_history_analysis(self, routes_dict):
+        """Analyzes the time history of the routes.
+
+        Parameters
+        ----------
+        routes_dict : dict
+            A dictionary containing the routes to be analyzed.
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
         # Hey, I will document this later
         la_times = [
             [r.departure_time, len(r.stops)]
@@ -549,8 +554,6 @@ class amzSerializer:
         plt.show()
         # plt.savefig(filename, dpi=300)
 
-        return None
-
     def print_info_by_city(self):
         """Prints the number of routes by city.
 
@@ -568,8 +571,6 @@ class amzSerializer:
         for city, dict in self.routes_dict.items():
             print(f"Percentage of routes in {city:12}: {len(dict) / s * 100:.2f}%")
 
-        return None
-
     def print_info(self):
         """Prints the information about the loaded database.
 
@@ -583,7 +584,8 @@ class amzSerializer:
             f"A total of {self.total_packages} packages were loaded from: package_data.json"
         )
         print(
-            f"  (...it considers total of {np.sum([len(self.packages_dict[x]) for x in self.packages_dict.keys()])} deliveries)"
+            "  (...it considers total of "
+            + f"{np.sum([len(self.packages_dict[x]) for x in self.packages_dict.keys()])} deliveries)"
         )
         print(
             f"    (...which represents a total of {len(self.packages_dict.keys())} routes"
@@ -596,16 +598,12 @@ class amzSerializer:
 
         # Actual Sequences
         print(
-            "The actual sequence of {} routes were loaded".format(
-                len(self.ac_sequences_dict)
-            )
+            f"The actual sequence of {len(self.ac_sequences_dict)} routes were loaded"
         )
 
         # Print information separated by city
         print("Routes by city:")
         self.print_info_by_city(self.routes_dict)
-
-        return None
 
     def export_routes_to_csv(
         self, city: str = "Los Angeles", filename="routes.csv"

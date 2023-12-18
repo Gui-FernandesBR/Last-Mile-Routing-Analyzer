@@ -4,9 +4,9 @@ __email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 __version__ = "1.0.0"
 
-from .amz_serializer import amzSerializer
+from .amz_serializer import AmzSerializer
 from .analysis import analysis
-from .distance_matrix import distanceMatrix
+from .distance_matrix import DistanceMatrix
 from .geometry import geometry
 from .package import package
 from .route import route

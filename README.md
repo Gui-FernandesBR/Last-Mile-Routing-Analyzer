@@ -9,6 +9,7 @@
 <img src="https://user-images.githubusercontent.com/63590233/177072382-be5e9814-3f9d-4e67-94f6-7e3a005068f0.png" alt="drawing" width="300"/> <img src="https://user-images.githubusercontent.com/63590233/177072593-8de9a8bd-b17b-4be3-8cbc-0cb14c1ddb57.png" alt="drawing" width="400"/></p>
 
 ## Table of Contents
+
 - [Last-Mile-Routing-Analyzer](#last-mile-routing-analyzer)
   - [Table of Contents](#table-of-contents)
   - [Motivation](#motivation)
@@ -27,14 +28,13 @@
 - In the end, a combination of different last-mile statics and street network analysis was made possible, allowing for significant insights to be made on the city's last mile routing problems.
 - The project is still going to be developed and maintained even after the thesis is finished, so any contribution is welcome.
 
-
 ## Features
 
 The tool was developed in Python and it is able to analyze the last mile routing problems in a city, considering the following aspects:
 
 - **Last Mile routing data**
   - Distance between origin and the destination
-    - Shortest driving path by *Google Maps* API and *OpenStreetMap* API
+    - Shortest driving path by _Google Maps_ API and _OpenStreetMap_ API
     - euclidean distance by [Haversine](https://en.wikipedia.org/wiki/Haversine_formula) formula;
   - Characterization of different routes
     - Center of gravity
@@ -50,16 +50,15 @@ The tool was developed in Python and it is able to analyze the last mile routing
     - Node degree
     - Polar plots of street orientation
 
-
 ## Installation
 
 First you need to certify that you have [Python 3.9](https://www.python.org/downloads/release/python-380/) installed.
 
 Then you can install the package using pip:
 
-```bash	
+```bash
 pip install git+https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/lmr_analyzer.git
-```	
+```
 
 The package will automatically install the dependencies listed at [requirements.txt]() file.
 
@@ -67,9 +66,9 @@ The package will automatically install the dependencies listed at [requirements.
 
 Here are some of the examples that you can run to get started with the package:
 
-* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/blob/master/docs/notebooks/lmr_analyzer/lmr_analyzer_example.ipynb) - Main example notebook with all the features of lmr_analyzer package.
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/blob/master/docs/notebooks/lmr_analyzer/lmr_analyzer_example.ipynb) - Main example notebook with all the features of lmr_analyzer package.
 
-* [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/blob/master/docs/notebooks/lmr_analyzer/geometry_class_example.ipynb) - Example over Los Angeles city using the geometry class.
+- [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/blob/master/docs/notebooks/lmr_analyzer/geometry_class_example.ipynb) - Example over Los Angeles city using the geometry class.
 
 ## Read the documentation
 
@@ -80,7 +79,7 @@ You can check the current docstring of each method and class individually.
 
 The repository is organized as follows:
 
-``` bash
+```bash
   .github/             - Github related files
   data/                - Data used in or generated with the examples
   docs/                - Documentation files
@@ -94,8 +93,7 @@ The repository is organized as follows:
   requirements-dev.txt - Python packages required to develop the package
   requirements.txt     - Python packages required to run the package
   setup.py             - Setup file
-```	
-
+```
 
 ## Library Structure
 
@@ -119,11 +117,11 @@ The architecture of the package is represented by the following diagram:
 classDiagram
     class lmr_analyzer {
     }
-    class amzSerializer {
+    class AmzSerializer {
     }
     class analysis {
     }
-    class distanceMatrix {
+    class DistanceMatrix {
     }
     class geometry {
     }
@@ -137,19 +135,19 @@ classDiagram
     }
     class vehicle {
     }
-    lmr_analyzer --> amzSerializer
+    lmr_analyzer --> AmzSerializer
     lmr_analyzer --> analysis
-    lmr_analyzer --> distanceMatrix
+    lmr_analyzer --> DistanceMatrix
     lmr_analyzer --> geometry
     lmr_analyzer --> package
     lmr_analyzer --> route
     lmr_analyzer --> stop
     lmr_analyzer --> utils
     lmr_analyzer --> vehicle
-    amzSerializer --> package
-    amzSerializer --> route
-    amzSerializer --> stop
-    amzSerializer --> vehicle
+    AmzSerializer --> package
+    AmzSerializer --> route
+    AmzSerializer --> stop
+    AmzSerializer --> vehicle
     route --> stop
     route --> utils
     stop --> package
@@ -160,13 +158,13 @@ classDiagram
 
 Due to the large amount of information, the data folder can be a bit confusing, so here is a brief description of what each folder contains:
 
-* data/driving_distances:
-  * A set of csv files containing the driving distances between some pairs of points in the dataset. The files are named as follows: `driving_distances_{dataset_name}.csv`. The dataset name is the same as the name of the folder containing the dataset. 
-* data/shapefiles: 
-  * `los_angeles_majors`: Shapefile containing the major neighborhoods of Los Angeles.
-  * `los_angeles_minors`: Shapefile containing the minor neighborhoods of Los Angeles.
-  * `guarulhos_osm` : geospatial data describing boundaries of all neighborhoods of the Guarulhos city. source: _OpenStreetMap_
-  * `urban_regions_Sao_Paulo`: geospatial data describing land use over state of Sao Paulo. source: unknown
+- data/driving_distances:
+  - A set of csv files containing the driving distances between some pairs of points in the dataset. The files are named as follows: `driving_distances_{dataset_name}.csv`. The dataset name is the same as the name of the folder containing the dataset.
+- data/shapefiles:
+  - `los_angeles_majors`: Shapefile containing the major neighborhoods of Los Angeles.
+  - `los_angeles_minors`: Shapefile containing the minor neighborhoods of Los Angeles.
+  - `guarulhos_osm` : geospatial data describing boundaries of all neighborhoods of the Guarulhos city. source: _OpenStreetMap_
+  - `urban_regions_Sao_Paulo`: geospatial data describing land use over state of Sao Paulo. source: unknown
 
 ## Contributing
 
@@ -198,7 +196,7 @@ If you use this package in your research, please cite it as:
   doi = {10.5281/zenodo.6792976}
 }
 
-```	
+```
 
 ## Contact
 

@@ -1,0 +1,8 @@
+[MESSAGES CONTROL]
+disable=Unnecessary-dunder-call,
+        fixme,
+        consider-using-generator, # enable this in the future for speedup
+        attribute-defined-outside-init, # enable this in the future
+        no-member, # enable this in the future
+        missing-function-docstring, # enable this in the future
+        useless-return, # enable this in the future

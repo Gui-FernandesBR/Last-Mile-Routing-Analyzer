@@ -1,7 +1,3 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
-
 import os
 from time import process_time
 
@@ -68,8 +64,6 @@ class geometry:
 
         self.bearing_dict = None
 
-        return None
-
     # Create graph methods
 
     def __create_graph_from_place(self):
@@ -95,8 +89,6 @@ class geometry:
                 max_query_area_size=50 * 1000 * 50 * 1000,
             )
         }
-
-        return None
 
     def __create_graphs_from_shapefile(self):
         """Read the shapefile and save it as osmnx graph.
@@ -129,8 +121,6 @@ class geometry:
 
         self.__create_multiple_graphs(keys=self.graph_key, values="geometry")
 
-        return None
-
     def __create_graph_from_bbox(self):
         # north (float) – northern latitude of bounding box
         # south (float) – southern latitude of bounding box
@@ -157,8 +147,6 @@ class geometry:
             clean_periphery=True,
             custom_filter=None,
         )
-
-        return None
 
     def __create_multiple_graphs(self, keys="Name", values="geometry"):
         """Create a graph for each minor geometry, usually a neighborhood.
@@ -228,9 +216,7 @@ class geometry:
         print(
             f"It was possible to create a graph for {self.number_of_graphs} of {self.number_of_polygons} polygons."
         )
-        print("Shapefile quality: {:.0f} %".format(self.shapefile_quality_percentage))
-
-        return None
+        print(f"Shapefile quality: {self.shapefile_quality_percentage:.0f} %")
 
     def __cut_graph_to_bbox(self):
         """Cut the geometry using the bounding box.
@@ -304,8 +290,6 @@ class geometry:
 
         names_list = [" ".join(x.split(" ", 2)[:2]) for x in list(self.graphs.keys())]
         self.attribute_table["name"] = names_list
-
-        return None
 
     def evaluate_street_orientation(self) -> None:
         """Evaluate the street orientation of each graph."""
@@ -412,8 +396,6 @@ class geometry:
 
         self.street_orientation_dict = street_orientation_dict
 
-        return None
-
     # Plot methods
 
     def plot_attribute_table(self, x="name", y=None, kind="scatter", color="red"):
@@ -442,13 +424,17 @@ class geometry:
         Parameters
         ----------
         grid : bool, optional
-            If set to True, it will generate a grid of plots with the graphs. If False, it will generate a single plot for each graph. by default True
+            If set to True, it will generate a grid of plots with the graphs.
+            If False, it will generate a single plot for each graph. by default
+            True
         savefig : bool, optional
-            If True, it will save the figure in the current working directory, and therefore will not show the figure. by default False
+            If True, it will save the figure in the current working directory,
+            and therefore will not show the figure. by default False
         dpi : int, optional
             Resolution of the final plot, by default 300
         figsize : tuple, optional
-            Define either the size of each graph figure or for the figure with the grid of plots, by default (8, 8)
+            Define either the size of each graph figure or for the figure with
+            the grid of plots, by default (8, 8)
 
         Returns
         -------
@@ -507,7 +493,7 @@ class geometry:
             sharex=False,
             sharey=False,
         )
-        title = self.place if self.place else self.shapefile
+        # title = self.place if self.place else self.shapefile
         # fig.suptitle(f"Graphs from {title}", fontsize=16)
 
         # Plot the graphs
@@ -544,18 +530,17 @@ class geometry:
         plt.tight_layout()
         # fig.delaxes(ax[-1][del_axes])
         if savefig:
-            fig.savefig(f"graphs_grid.pdf", dpi=dpi)
+            fig.savefig("graphs_grid.pdf", dpi=dpi)
         else:
             plt.show()
         plt.close()
 
-        return None
-
     def plot_street_orientation_linear(
         self, grid=False, savefig=False, dpi=300, figsize=(12, 4)
     ):
-        """Plots the street orientation for each neighborhood or polygon. It can be used to
-        generate either a grid of plots or a single plot for each graph.
+        """Plots the street orientation for each neighborhood or polygon. It can
+        be used to generate either a grid of plots or a single plot for each
+        graph.
 
         Parameters
         ----------
@@ -582,7 +567,7 @@ class geometry:
                 ax = value["bearings_0_360"].hist(bins=36, figsize=figsize)
                 ax.set_xticks(np.arange(0, 361, 20))
                 ax.set_xlim(0, 360)
-                ax.set_title(f"{k} street network edge bearings")
+                ax.set_title("street network edge bearings")
 
                 # Save the figure if savefig is True, show otherwise
                 if savefig:
@@ -590,8 +575,6 @@ class geometry:
                 else:
                     plt.show()
                 plt.close()
-
-        return None
 
     def plot_street_orientation_polar(
         self, grid=False, savefig=False, dpi=300, figsize=(5, 5)
@@ -674,8 +657,6 @@ class geometry:
                     plt.show()
                 plt.close()
 
-        return None
-
     # Export methods
 
     def save_graphs_to_shapefile(self, path):
@@ -695,8 +676,6 @@ class geometry:
 
         for key, value in self.graphs.items():
             ox.save_graph_shapefile(value, filename=path + f"_{key}")
-
-        return None
 
     def export_street_orientation_to_csv(self, filename):
         """Exports the street orientation to a csv file.
@@ -725,15 +704,13 @@ class geometry:
                     3
                 ),
                 "mean_deviation": value["mean_deviation"].round(3),
-                "quadratic_sum_deviation": value["quadratic_sum_deviation"].round(3),
+                # "quadratic_sum_deviation": value["quadratic_sum_deviation"].round(3),
                 "skew": value["skew"].round(3),
                 "kurtosis": value["kurt"].round(3),
             }
 
         df = pd.DataFrame.from_dict(export_dict, orient="index")
         df.to_csv(filename)
-
-        return None
 
     def export_basic_stats_to_csv(self, filename):
         """_summary_
@@ -770,8 +747,6 @@ class geometry:
 
         df = pd.DataFrame.from_dict(export_dict, orient="index")
         df.to_csv(filename)
-
-        return None
 
     # Pickle object to save time in the future
 

@@ -1,8 +1,9 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
-
-
+"""This module contains the route class, which is used to store all the
+relevant information regarding one route. A route is defined as a sequence of
+stops that a vehicle follows in a specific day. The route object can be defined
+by a list of stops or a dictionary of stops, not necessarily in the correct
+order.
+"""
 import warnings
 from multiprocessing import Pool
 
@@ -354,17 +355,13 @@ class route:
             "failed_attempted_packages_percentage": self.failed_attempted_packages_percentage,
         }
 
-        return None
-
     def evaluate_route_scores(self) -> None:
         print("Hey, I will develop this later.")
-        return None
 
     # Analyzing route times
 
     def calculate_route_times(self) -> None:
         print("Hey, I will develop this later.")
-        return None
 
     # Analyzing route distances and circuity factors
 
@@ -392,7 +389,6 @@ class route:
                 f"Sequence is empty. The '{name}' attribute will be set as a null array."
             )
             self.__setattr__(name, np.array([]))
-            return None
 
         # Create a list of distances between the stops
         distances = list(
@@ -414,8 +410,6 @@ class route:
 
         # Save the distances as an attribute of the route
         self.__setattr__(name, np.array(distances))
-
-        return None
 
     def evaluate_euclidean_distances(self, planned=False, actual=False) -> None:
         """Evaluate the euclidean distances between the stops of the route.
@@ -508,9 +502,7 @@ class route:
         distances_km = [x[0] for x in osm_distances]
         # durations_min = [x[1] for x in osm_distances]
 
-        self.__setattr__(name, distances_km)
-
-        return None
+        self.__setattr__(name, distances_km)  # pylint: disable=unnecessary-dunder-call
 
     def evaluate_driving_distances(
         self,
@@ -617,8 +609,6 @@ class route:
             )
             self.total_actual_driving_distance = sum(self.actual_driving_distances)
 
-        return None
-
     def evaluate_circuity_factor(self, planned=True, actual=True) -> None:
         """Evaluate the circuity factor of the route. It is defined as the ratio
         between the driving distance and the euclidean distance. Booleans
@@ -681,8 +671,6 @@ class route:
                 self.actual_circuity_factors,
             )
             self.med_actual_circuity_factor = np.median(self.actual_circuity_factors)
-
-        return None
 
     # Analyzing routes shape and area
 
@@ -752,8 +740,6 @@ class route:
             warnings.warn("Could not find the bounding box of the actual sequence.")
             self.actual_bbox = None
 
-        return None
-
     @staticmethod  # TODO: Test!
     def minimum_rotated_rectangle(coords: np.array):
         # Find the minimum rotated rectangle of a set of coordinates
@@ -775,9 +761,9 @@ class route:
             )
         )
         # Find the center of the minimum rotated rectangle
-        center = Point(
-            (min_rect[1].x + min_rect[2].x) / 2, (min_rect[1].y + min_rect[2].y) / 2
-        )
+        # center = Point(
+        #     (min_rect[1].x + min_rect[2].x) / 2, (min_rect[1].y + min_rect[2].y) / 2
+        # )
         # Find the angle of the minimum rotated rectangle
         angle = (
             np.arctan2(min_rect[2].y - min_rect[1].y, min_rect[2].x - min_rect[1].x)
@@ -850,8 +836,6 @@ class route:
         self.convex_hull_coords = hull.points[hull.vertices]
         self.convex_hull_polygon = Polygon(points[hull.vertices])
 
-        return None
-
     def calculate_convex_hull_polygon_area(self):
         """Calculate the area of the convex hull polygon.
 
@@ -865,8 +849,6 @@ class route:
             self.create_convex_hull_polygon()
             self.convex_hull_polygon_area = self.convex_hull_polygon.area
         print("Awesome! I calculated the area of the convex hull polygon!")
-
-        return None
 
     def create_location_types_dictionary(self) -> None:
         """Create two dictionaries that contain the stops separated by location
@@ -890,8 +872,6 @@ class route:
         self.number_of_delivery_stops = len(self.delivery_points_dict)
         self.number_of_depots = len(self.depots_dict)
 
-        return None
-
     def create_delivery_locations_list(self) -> None:
         """Create a list with the delivery locations. This is powerful for
         excluding the depots from the analysis.
@@ -908,8 +888,6 @@ class route:
         # TODO: Do the same but using list comprehension
 
         self.delivery_locations_list = locations
-
-        return None
 
     # TODO: Test!
     def calculate_route_centroid(self) -> None:
@@ -955,8 +933,6 @@ class route:
             self.actual_sequence_centroid_std = (np.nan, np.nan)
             self.actual_sequence_centroid_coeff_var = (np.nan, np.nan)
 
-        return None
-
     # TODO: Test!
     # Fit the convex hull polygon to an ellipse
     def fit_convex_hull_polygon_to_rectangle(self):
@@ -989,8 +965,6 @@ class route:
             self.convex_hull_polygon_area / self.convex_hull_polygon_ellipse_area
         )
 
-        return None
-
     def distance_to_depots(self) -> None:
         """Calculate the distance to the nearest depot.
 
@@ -1015,25 +989,23 @@ class route:
         # Save attributes
         self.distances_depot_dict = distances
 
-        return None
-
     # Export and visualize route
 
-    def print_info(self):
-        return None
+    # def print_info(self):
+    #     return None
 
-    def plot_route(self, return_figure=False):
-        return None
+    # def plot_route(self, return_figure=False):
+    #     return None
 
-    def plot_stops(self, return_figure=False):
-        return None
+    # def plot_stops(self, return_figure=False):
+    #     return None
 
-    @classmethod
-    def load_from_file(cls, filename):
-        return None
+    # @classmethod
+    # def load_from_file(cls, filename):
+    #     return None
 
-    def save_to_file(self, filename):
-        return None
+    # def save_to_file(self, filename):
+    #     return None
 
 
 # TODO: Calculate distance to DC

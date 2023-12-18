@@ -1,14 +1,10 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
-
 import csv
 import json
 
 import numpy as np
 
 
-class distanceMatrix:
+class DistanceMatrix:
     """A class to either calculate or load distance matrices. A distance matrix
     is used to store the distance between each origin and destination node.
     Usually, the computation of such matrices is very expensive, so it is
@@ -203,8 +199,6 @@ class distanceMatrix:
         print("Awesome, the distance matrix loaded successfully!")
         print("The routes matrix was also loaded and saved as an attribute.")
 
-        return None
-
     def calculate_distances(self, mode="osm"):
         """Calculates the distances between the origins and destinations,
         using the selected mode.
@@ -220,11 +214,9 @@ class distanceMatrix:
         """
 
         print("Hey, I will finish this soon!")
-        distance, duration = (None, None)
-        distances = (distance, duration)
-        matrix = {}
-
-        return None
+        # distance, duration = (None, None)
+        # distances = (distance, duration)
+        # matrix = {}
 
     def create_matrix(self):
         """Generate the distance matrix. The distance matrix is a dictionary
@@ -242,8 +234,6 @@ class distanceMatrix:
         None
         """
         print("Hey, I will finish this soon!")
-
-        return None
 
     def calculate_matrix_statistics(self):
         """Calculates the statistics of the distance matrix and save them as
@@ -278,8 +268,6 @@ class distanceMatrix:
         self.n_destinations = len(self.destinations)
         # Number of distances stored
         self.n_distances = len(distances)
-
-        return None
 
     def print_info(self):
         """Prints the information of the distance matrix.

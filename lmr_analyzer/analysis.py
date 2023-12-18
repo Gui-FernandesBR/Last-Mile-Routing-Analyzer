@@ -1,8 +1,3 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
-
-
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -241,10 +236,8 @@ class analysis:
 
         ## Calculate the percentage of rejected routes
         self.number_of_rejected_packages = sum(
-            [
-                x.route_status_dict["number_of_rejected_packages"]
-                for x in self.routes_dict.values()
-            ]
+            x.route_status_dict["number_of_rejected_packages"]
+            for x in self.routes_dict.values()
         )
         self.rejected_packages_percentage = self.number_of_rejected_packages / len(
             self.routes_dict.values()
