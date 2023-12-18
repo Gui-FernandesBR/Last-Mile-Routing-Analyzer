@@ -369,9 +369,9 @@ class AmzSerializer:
 
         return actual_sequences
 
-    # def serialize_travel_times(self, travel_times):
-    #     # TODO: Implement travel times serialization
-    #     return None
+    def serialize_travel_times(self, travel_times):
+        # TODO: Implement travel times serialization
+        return None
 
     def serialize_all(self, root_directory):
         """Serializes all the files in the root directory.
