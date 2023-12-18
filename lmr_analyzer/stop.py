@@ -3,6 +3,7 @@ __email__ = "gf10.alves@gmail.com"
 __license__ = "Mozilla Public License 2.0"
 
 import numpy as np
+
 from .package import package
 
 
