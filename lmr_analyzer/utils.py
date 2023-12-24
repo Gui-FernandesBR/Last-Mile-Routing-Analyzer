@@ -73,8 +73,11 @@ def drive_distance_gmaps(origin, destination, api_key=None):
     destination_coordinates = "{},{}".format(destination[0], destination[1])
 
     # Create the request URL
-    url = "https://maps.googleapis.com/maps/api/directions/json?origin={}&destination={}&key={}".format(
-        origin_coordinates, destination_coordinates, api_key
+    url = (
+        "https://maps.googleapis.com/maps/api/directions/json?origin="
+        + "{}&destination={}&key={}".format(
+            origin_coordinates, destination_coordinates, api_key
+        )
     )
 
     # Make the request

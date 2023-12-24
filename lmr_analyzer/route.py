@@ -13,11 +13,11 @@ import shapely
 from scipy.spatial import ConvexHull
 from shapely.geometry import Point, Polygon
 
-from .stop import stop
+from .stop import Stop
 from .utils import get_distance
 
 
-class route:
+class Route:
     """Store all the relevant information regarding one route. A route is defined
     as a sequence of stops that a vehicle follows in a specific day. The route
     object can be defined by a list of stops or a dictionary of stops, not
@@ -81,7 +81,7 @@ class route:
         return None
 
     def __get_distance_from_dist_matrix(
-        self, distance_matrix: dict, stop: stop
+        self, distance_matrix: dict, stop: Stop
     ) -> float:
         """Auxiliary function to get the distance from a distance matrix.
 
@@ -138,7 +138,7 @@ class route:
         """
 
         # Can receive a list of stops or a list of stop names
-        if all(isinstance(x, stop) for x in sequence):
+        if all(isinstance(x, Stop) for x in sequence):
             # In case the sequence is a list of stops
             # This MUST be a list of stops, not a dictionary
             self.planned_sequence = sequence
@@ -152,8 +152,6 @@ class route:
 
         self.number_of_planned_stops = len(self.planned_sequence)
         self.planned_sequence_names = [x.name for x in self.planned_sequence]
-
-        return None
 
     def set_actual_sequence(self, sequence: list) -> None:
         """Set the actual sequence of the route. The actual sequence is the
@@ -179,7 +177,7 @@ class route:
         """
 
         # Can receive a list of stops or a list of stop names
-        if all(isinstance(x, stop) for x in sequence):
+        if all(isinstance(x, Stop) for x in sequence):
             # In case the sequence is a list of stops
             # This MUST be a list of stops, not a dictionary
             self.actual_sequence = sequence
@@ -194,14 +192,12 @@ class route:
         self.number_of_actual_stops = len(self.actual_sequence)
         self.actual_sequence_names = [x.name for x in self.actual_sequence]
 
-        return None
-
     def set_vehicle(self, vehicle) -> None:
         """Set the vehicle that follows the route.
 
         Parameters
         ----------
-        vehicle : lmr_analyzer.vehicle
+        vehicle : lmr_analyzer.Vehicle
             The vehicle that follows the route.
 
         Returns
@@ -209,7 +205,6 @@ class route:
         None
         """
         self.vehicle = vehicle
-        return None
 
     # Analyzing route quality
 
@@ -251,8 +246,6 @@ class route:
             )
             / self.number_of_planned_stops
         )
-
-        return None
 
     def evaluate_route_status(self) -> None:
         """Evaluate the general status of the route. This provides a summary of
@@ -460,8 +453,6 @@ class route:
             )
             self.max_actual_euclidean_distance = np.max(self.actual_euclidean_distances)
             self.min_actual_euclidean_distance = np.min(self.actual_euclidean_distances)
-
-        return None
 
     def __calculate_driving_distances(
         self, sequence: list, name: str, mode="osm", multiprocessing=False
@@ -821,8 +812,6 @@ class route:
         except AttributeError:
             warnings.warn("Could not find the minimum rotated rectangle of the actual.")
             self.actual_mrr = None
-
-        return None
 
     def create_convex_hull_polygon(self) -> None:
         """Create a polygon that represents the convex hull of the route.

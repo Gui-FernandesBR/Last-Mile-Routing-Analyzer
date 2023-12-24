@@ -5,11 +5,11 @@ __license__ = "Mozilla Public License 2.0"
 __version__ = "1.0.0"
 
 from .amz_serializer import AmzSerializer
-from .analysis import analysis
+from .analysis import Analysis
 from .distance_matrix import DistanceMatrix
-from .geometry import geometry
-from .package import package
-from .route import route
-from .stop import stop
+from .geometry import Geometry
+from .package import Package
+from .route import Route
+from .stop import Stop
 from .utils import *
-from .vehicle import vehicle
+from .vehicle import Vehicle

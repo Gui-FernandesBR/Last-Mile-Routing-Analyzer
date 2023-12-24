@@ -1,3 +1,5 @@
+""""""
+
 import os
 from time import process_time
 
@@ -12,7 +14,7 @@ from IPython.display import display
 # plt.style.use("seaborn-v0_8-dark-palette")
 
 
-class geometry:
+class Geometry:
     """
     This class is responsible for handling the geometry of the analysis.
 
@@ -59,7 +61,8 @@ class geometry:
                     self.__cut_graph_to_bbox()
             else:
                 raise ValueError(
-                    "You must provide either a shapefile, place query or a bounding box, otherwise there is no way to create the geometry."
+                    "You must provide either a shapefile, place query or a "
+                    + "bounding box, otherwise there is no way to create the geometry."
                 )
 
         self.bearing_dict = None
@@ -88,7 +91,7 @@ class geometry:
                 memory=None,
                 max_query_area_size=50 * 1000 * 50 * 1000,
             )
-        }
+        }  # TODO: check why osmnx has broken this code.
 
     def __create_graphs_from_shapefile(self):
         """Read the shapefile and save it as osmnx graph.
@@ -214,7 +217,8 @@ class geometry:
             100 * self.number_of_graphs / self.number_of_polygons
         )
         print(
-            f"It was possible to create a graph for {self.number_of_graphs} of {self.number_of_polygons} polygons."
+            f"It was possible to create a graph for {self.number_of_graphs} "
+            + f"of {self.number_of_polygons} polygons."
         )
         print(f"Shapefile quality: {self.shapefile_quality_percentage:.0f} %")
 
@@ -264,11 +268,7 @@ class geometry:
         print(
             f"It was possible to create a graph for {self.number_of_stats} of {self.number_of_polygons} polygons."
         )
-        print(
-            "Basic stats quality: {:.0f} %".format(self.basic_stats_quality_percentage)
-        )
-
-        return None
+        print(f"Basic stats quality: {self.basic_stats_quality_percentage:.0f} %")
 
     def create_attribute_table(self) -> None:
         """Create a pandas data frame with the basic stats of each graph.
@@ -302,7 +302,8 @@ class geometry:
         for key, graph in self.graphs.items():
             # Update the display
             output.update(
-                f"Street orientation for '{key}' calculated! Completed: {len(street_orientation_dict)} of {self.number_of_polygons}",
+                f"Street orientation for '{key}' calculated! Completed: "
+                + f"{len(street_orientation_dict)} of {self.number_of_polygons}",
             )
             try:
                 graph = ox.add_edge_bearings(graph)
@@ -675,6 +676,7 @@ class geometry:
         """
 
         for key, value in self.graphs.items():
+            # TODO: osmnx changed this, why?
             ox.save_graph_shapefile(value, filename=path + f"_{key}")
 
     def export_street_orientation_to_csv(self, filename):

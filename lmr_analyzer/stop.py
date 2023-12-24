@@ -4,10 +4,10 @@ location or a delivery location."""
 
 import numpy as np
 
-from .package import package
+from .package import Package
 
 
-class stop:
+class Stop:
     """Class to hold the information of a stop.
 
     Attributes
@@ -97,7 +97,7 @@ class stop:
         if isinstance(packages, dict):
             self.packages_list = list(packages.values())
         elif isinstance(packages, list) and all(
-            isinstance(pck, package) for pck in packages
+            isinstance(pck, Package) for pck in packages
         ):
             self.packages_list = packages
         else:

@@ -10,10 +10,10 @@ from datetime import datetime
 import numpy as np
 import pytz
 
-from .package import package as package_class
-from .route import route as route_class
-from .stop import stop as stop_class
-from .vehicle import vehicle as vehicle_class
+from .package import Package
+from .route import Route
+from .stop import Stop
+from .vehicle import Vehicle
 
 
 class bbox:
@@ -96,8 +96,8 @@ class AmzSerializer:
         self.serialize_all(root_directory)
 
     def serialize_packages(self, packages_dict):
-        """Serializes a package object into a dictionary. The dictionary can be
-        used to create a new package object for each package present in the
+        """Serializes a Package object into a dictionary. The dictionary can be
+        used to create a new Package object for each package present in the
         packages_dict.
 
         Parameters
@@ -122,7 +122,7 @@ class AmzSerializer:
             for index2, stop_id in enumerate(packages_dict[route_id]):
                 # Iterate through the packages in the current stop
                 for package_id, values in packages_dict[route_id][stop_id].items():
-                    if isinstance(values, package_class):
+                    if isinstance(values, Package):
                         continue
 
                     else:
@@ -138,7 +138,7 @@ class AmzSerializer:
                             )
 
                         # Create one package object
-                        pck = package_class(
+                        pck = Package(
                             name=package_id,
                             dimensions=(
                                 values["dimensions"]["depth_cm"],
@@ -239,7 +239,7 @@ class AmzSerializer:
                 continue
 
             for index2, stop_id in enumerate(routes_dict[route_id]["stops"]):
-                if isinstance(routes_dict[route_id]["stops"][stop_id], stop_class):
+                if isinstance(routes_dict[route_id]["stops"][stop_id], Stop):
                     continue
 
                 lc_type = routes_dict[route_id]["stops"][stop_id]["type"]
@@ -250,7 +250,7 @@ class AmzSerializer:
                 else:
                     raise ValueError(f"Invalid location type, please check {lc_type}")
 
-                stop = stop_class(
+                stop = Stop(
                     name=stop_id,
                     location=(
                         routes_dict[route_id]["stops"][stop_id]["lat"],
@@ -264,7 +264,7 @@ class AmzSerializer:
 
                 routes_dict[route_id]["stops"][stop_id] = stop
 
-            vehicle = vehicle_class(
+            vehicle = Vehicle(
                 name="random_vehicle",
                 capacity=routes_dict[route_id]["executor_capacity_cm3"],
             )
@@ -273,7 +273,7 @@ class AmzSerializer:
             hour = [
                 int(x) for x in routes_dict[route_id]["departure_time_utc"].split(":")
             ]
-            route = route_class(
+            route = Route(
                 name=route_id,
                 stops=routes_dict[route_id]["stops"],
                 departure_time=datetime(

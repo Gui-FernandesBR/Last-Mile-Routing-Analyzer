@@ -104,8 +104,6 @@ class DistanceMatrix:
             self.origins_names = list(self.matrix.keys())
             self.destinations_names = list(self.matrix[self.origins_names[0]].keys())
 
-        return None
-
     def load_support_matrix_file(self, filename):
         """Loads a support matrix file. A support matrix file is a file containing
         the distance matrix and the origins and destinations coordinates. This
@@ -285,8 +283,6 @@ class DistanceMatrix:
         print(f"Average distance:           {self.average_distance:.3f} km")
         print(f"Standard deviation:         {self.std_distance:.3f} km")
 
-        return None
-
     def save_matrix(self, filename):
         """Saves the distance matrix into a .json file.
 
@@ -298,8 +294,6 @@ class DistanceMatrix:
 
         with open(filename, "w") as f:
             json.dump(self.matrix, f)
-
-        return None
 
     @classmethod
     def load(cls, path):

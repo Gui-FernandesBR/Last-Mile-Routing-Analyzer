@@ -1,10 +1,10 @@
-"""This module contains the package class, which is used to store information
+"""This module contains the Package class, which is used to store information
 about a package. A package is understood as a product that is to be delivered
 to a customer.
 """
 
 
-class package:
+class Package:
     """Class to store package information"""
 
     def __init__(
@@ -15,7 +15,7 @@ class package:
         weight: float = 0,
         price: float = 0,
     ):
-        """Initializes the package object.
+        """Initializes the Package object.
 
         Parameters
         ----------

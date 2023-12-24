@@ -4,7 +4,7 @@ to deliver packages to customers.
 """
 
 
-class vehicle:
+class Vehicle:
     """Class to store vehicle information"""
 
     def __init__(self, name, capacity):

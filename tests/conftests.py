@@ -1,3 +1,3 @@
 import pytest
 
-from lmr_analyzer import analysis, geometry, package, route, stop, utils
+from lmr_analyzer import Analysis, Geometry, Package, Route, Stop, utils

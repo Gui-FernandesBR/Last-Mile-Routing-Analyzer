@@ -1,8 +1,10 @@
+""""""
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
 
-class analysis:
+class Analysis:
     """A class to analyze a set of routes."""
 
     def __init__(self, name: str, routes: list):
@@ -24,8 +26,6 @@ class analysis:
 
         # Create a dictionary with the routes, to facilitate the access
         self.routes_dict = {x.name: x for x in self.routes}
-
-        return None
 
     # Time analysis
 
@@ -51,8 +51,6 @@ class analysis:
         # Calculate the time period
         self.time_period = (self.total_start_time, self.total_end_time)
         self.time_period_length = self.total_end_time - self.total_start_time
-
-        return None
 
     def create_calendar_dict(self):
         """Create a dictionary as a calendar considering the time of each stop.
@@ -94,8 +92,6 @@ class analysis:
 
         self.calendar_dict = calendar_dict
 
-        return None
-
     # Circuity Factor analysis
 
     def calculate_euclidean_distances(self, planned=True, actual=True) -> None:
@@ -115,8 +111,6 @@ class analysis:
         """
         for route in self.routes_dict.values():
             route.evaluate_euclidean_distances(planned=planned, actual=actual)
-
-        return None
 
     def calculate_driving_distances(
         self,
@@ -148,8 +142,6 @@ class analysis:
                 planned_distance_matrix=planned_distance_matrix,
                 actual_distance_matrix=actual_distance_matrix,
             )
-
-        return None
 
     def calculate_circuity_factor(self, planned=True, actual=True):
         """Calculate the circuity factor of all routes.
@@ -278,8 +270,6 @@ class analysis:
             "average_packages_per_stop": self.average_packages_per_stop,
         }
 
-        return None
-
     # Unique stops analysis (left apart from the analysis.py, because it was consuming too much time)
 
     # Centroid analysis
@@ -302,8 +292,6 @@ class analysis:
         for route in self.routes_dict.values():
             route.calculate_route_centroid()
 
-        return None
-
     # Geometric analysis
 
     def calculate_each_route_bbox(self) -> None:
@@ -316,8 +304,6 @@ class analysis:
 
         for route in self.routes_dict.values():
             route.find_bbox()
-
-        return None
 
     def find_overall_bbox(self) -> None:
         """Find and select the bbox that encloses all of the routes. It kind
@@ -349,8 +335,6 @@ class analysis:
             self.overall_bbox[3] - self.overall_bbox[1]
         )  # TODO: This are is multiplying two angles, so it is not correct
 
-        return None
-
     # GeoSpatial operations (in the future!)
 
     # Combined analysis methods
@@ -358,10 +342,7 @@ class analysis:
     def __calculate_all(self, planned=False, actual=False) -> None:
         """This is currently private for documentation purposes. It will be
         public in the future when it is ready."""
-
         return None
-
-    # Plot methods (in the future!)
 
     def plot_circuity_factor(self, planned=False, actual=True) -> None:
         """Plot the circuity factor of the routes.
@@ -402,8 +383,6 @@ class analysis:
 
             # TODO: Improve C.F. plots
 
-        return None
-
     # Print and report methods
 
     def print_all_info(self):
@@ -419,11 +398,9 @@ class analysis:
         print("The number of stops is: {}".format(len(self.unique_stops_dict)))
         print("The number of deliveries is: {}".format(self.number_of_deliveries))
 
-        return None
-
     def plot_all_info(self):
         # TODO: Implement plot_all_info
-        return None
+        pass
 
     # Export methods
 
@@ -436,7 +413,7 @@ class analysis:
         None
         """
 
-        df = {}  # Initialize the dictionary
+        df = {}
 
         # Iterate over the routes and summarize the information
         for route in self.routes:
@@ -476,7 +453,6 @@ class analysis:
                 "Median Circuity factor per stop": route.med_actual_circuity_factor,
             }  # TODO: Fix total packages %
 
-        # Return the dictionary
         return df
 
     def export_summary_by_routes(self, filename: str = "summary_by_routes.csv") -> None:
@@ -493,8 +469,6 @@ class analysis:
         df = self.summarize_by_routes()
         df = pd.DataFrame.from_dict(df, orient="index")
         df.to_csv(filename)
-
-        return None
 
 
 # TODO: Plot the % rejection vs Circuity factor per route/neighborhood
