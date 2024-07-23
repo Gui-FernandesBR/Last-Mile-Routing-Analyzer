@@ -1,93 +1,58 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
+import enum
 
 
-class package:
+class PackageStatus(enum.Enum):
+    TO_BE_DELIVERED = "to-be-delivered"
+    REJECTED = "rejected"
+    ATTEMPTED = "attempted"
+    DELIVERED = "delivered"
+
+    @staticmethod
+    def get_members():
+        return [member.value for member in PackageStatus.__members__.values()]
+
+
+class Package:
     """Class to store package information"""
 
     def __init__(
         self,
         name: str,
-        dimensions: tuple,
-        status: str,
+        dimensions: tuple[float, float, float],  # depth, height, width
+        status: PackageStatus,
         weight: float = 0,
         price: float = 0,
     ):
-        """_summary_
+        """Initializes the Package object."""
 
-        Parameters
-        ----------
-        name : str
-            The name of the package.
-        dimensions : tuple
-            A tuple containing the dimensions of the package. The tuple must be
-            in the form (depth, height, width).
-        status : str
-            The status of the package. The status must be one of the following:
-            'to-be-delivered', 'rejected', 'attempted', 'delivered'.
-        weight : int, optional
-            The weight of the package, in grams. The default is 0.
-        price : int, optional
-            The price of the package, in monetary units. The default is 0.
-        """
+        self.name = name
+        self.dimensions = dimensions
+        self.status = status
+        self.weight = weight
+        self.price = price
 
-        # Save arguments as attributes
-        self.name, self.dimensions, self.status, self.weight, self.price = (
-            name,
-            dimensions,
-            status,
-            weight,
-            price,
-        )
-
-        # Check if status is valid
-        if status not in ["to-be-delivered", "rejected", "attempted", "delivered"]:
+    def __post_init__(self):
+        if self.status not in PackageStatus.get_members():
             raise ValueError(
-                "Invalid package status: must be one of the following: 'to-be-delivered', 'rejected', 'attempted', 'delivered'."
+                "Invalid package status: must be one of the following: "
+                "'to-be-delivered', 'rejected', 'attempted', 'delivered'."
             )
 
-        return None
-
     @property
-    def volume(self):
-        """Calculates the volume of the package, given its dimensions.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        float
-            The volume of the package.
-        """
+    def volume(self) -> float:
+        """The volume of the package given its dimensions."""
         return self.dimensions[0] * self.dimensions[1] * self.dimensions[2]
 
-    def modify_status(self, status):
-        """Modifies the status of the package.
-
-        Parameters
-        ----------
-        status : str
-            The status of the package. The status must be one of the following:
-            'rejected', 'attempted', 'delivered'.
-
-        Returns
-        -------
-        None
-        """
+    def modify_status(self, status: PackageStatus) -> None:
+        """Modifies the status of the package."""
         self.status = status
-        return None
 
-    def print_info(self):
-        """Prints the package information.
+    def print_info(self) -> None:
+        """Prints the package information to the console."""
 
-        Returns
-        -------
-        None
-        """
-        print(
-            f"Package name: {self.name}\nDimensions: {self.dimensions}\nStatus: {self.status}\nWeight: {self.weight}\nPrice: {self.price}\nVolume: {self.volume}"
-        )
-        return None
+        print(f"Package name: {self.name}")
+        print(f"Dimensions: {self.dimensions}")
+        print(f"Status: {self.status}")
+        print(f"Weight: {self.weight}")
+        print(f"Price: {self.price}")
+        print(f"Volume: {self.volume}")

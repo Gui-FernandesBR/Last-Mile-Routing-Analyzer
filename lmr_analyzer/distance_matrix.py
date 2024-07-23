@@ -1,14 +1,10 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
-
 import csv
 import json
 
 import numpy as np
 
 
-class distanceMatrix:
+class DistanceMatrix:
     """A class to either calculate or load distance matrices. A distance matrix
     is used to store the distance between each origin and destination node.
     Usually, the computation of such matrices is very expensive, so it is
@@ -108,9 +104,7 @@ class distanceMatrix:
             self.origins_names = list(self.matrix.keys())
             self.destinations_names = list(self.matrix[self.origins_names[0]].keys())
 
-        return None
-
-    def load_support_matrix_file(self, filename):
+    def load_support_matrix_file(self, filename: str) -> None:
         """Loads a support matrix file. A support matrix file is a file containing
         the distance matrix and the origins and destinations coordinates. This
         function will load the file and save the matrix, origins and destinations
@@ -123,10 +117,6 @@ class distanceMatrix:
             The name of the file containing the support matrix. The file must
             be a csv file with the following structure:
             route, stop, lat, lon, distance_to_next_stop(km), duration(min)
-
-        Returns
-        -------
-        None
         """
 
         # Open and read the csv file
@@ -136,9 +126,10 @@ class distanceMatrix:
                 reader = csv.reader(f)
                 matrix = next(reader)
                 matrix = list(reader)
-        except FileNotFoundError:
-            print("File not found!")
-            return None
+        except FileNotFoundError as e:
+            raise FileNotFoundError(
+                "The file was not found. Please check the path."
+            ) from e
 
         n_rows = len(matrix)
         route = matrix[1][0]
@@ -200,94 +191,25 @@ class distanceMatrix:
             #             route
             #         ][destination]["distance_to_next(km)"]
 
-        print("Awesome, the distance matrix loaded successfully!")
-        print("The routes matrix was also loaded and saved as an attribute.")
+        print("Awesome, the distance matrix was loaded successfully!")
+        print("The routes matrix was also loaded and saved as an attribute.\n")
 
-        return None
-
-    def calculate_distances(self, mode="osm"):
-        """Calculates the distances between the origins and destinations,
-        using the selected mode.
-
-        Parameters
-        ----------
-        mode : str, optional
-            The mode , by default "osm"
-
-        Returns
-        -------
-        None
+    def calculate_matrix_statistics(self) -> None:
         """
-
-        print("Hey, I will finish this soon!")
-        distance, duration = (None, None)
-        distances = (distance, duration)
-        matrix = {}
-
-        return None
-
-    def create_matrix(self):
-        """Generate the distance matrix. The distance matrix is a dictionary
-        containing the distance between each origin and destination node.
-        The dictionary has the following structure:
-        {
-            "origin_1": {
-                "destination_1": distance,
-                "destination_2": distance,
-                ...
-
-
-        Returns
-        -------
-        None
+        Calculates the statistics of the distance matrix and save them as
+        attributes.
         """
-        print("Hey, I will finish this soon!")
-
-        return None
-
-    def calculate_matrix_statistics(self):
-        """Calculates the statistics of the distance matrix and save them as
-        attributes. The current available statistics are the following:
-            - Maximum distance
-            - Minimum distance
-            - Average distance
-            - Standard deviation
-            - Number of origins
-            - Number of destinations
-            - Number of distances stored
-
-        Returns
-        -------
-        None
-        """
-
-        # Save the distances into a np.array
         distances = np.array(self.distances)
-
-        # Maximum distance
         self.max_distance = np.max(distances)
-        # Minimum distance
         self.min_distance = np.min(distances)
-        # Average distance
         self.average_distance = np.mean(distances)
-        # Standard deviation
         self.std_distance = np.std(distances)
-        # Number of origins
         self.n_origins = len(self.origins)
-        # Number of destinations
         self.n_destinations = len(self.destinations)
-        # Number of distances stored
         self.n_distances = len(distances)
 
-        return None
-
-    def print_info(self):
-        """Prints the information of the distance matrix.
-
-        Returns
-        -------
-        None
-        """
+    def print_info(self) -> None:
+        """Prints the information of the distance matrix."""
 
         # print(f"Number of origins:          {self.n_origins}")
         # print(f"Number of destinations:     {self.n_destinations}")
@@ -297,21 +219,10 @@ class distanceMatrix:
         print(f"Average distance:           {self.average_distance:.3f} km")
         print(f"Standard deviation:         {self.std_distance:.3f} km")
 
-        return None
-
-    def save_matrix(self, filename):
-        """Saves the distance matrix into a .json file.
-
-        Parameters
-        ----------
-        filename : str
-            The name of the file to save the distance matrix.
-        """
-
+    def save_matrix(self, filename: str):
+        """Saves the distance matrix into a .json file."""
         with open(filename, "w") as f:
             json.dump(self.matrix, f)
-
-        return None
 
     @classmethod
     def load(cls, path):
