@@ -1,0 +1,23 @@
+{
+    "cSpell.words": [
+        "botocore",
+        "buildapi",
+        "chicago",
+        "cloudpickle",
+        "dijkstra",
+        "figsize",
+        "gmaps",
+        "ipython",
+        "ipywidgets",
+        "isort",
+        "iterrows",
+        "matplotlib",
+        "networkx",
+        "nominatim",
+        "numpy",
+        "osmnx",
+        "pytest",
+        "pytz",
+        "scipy"
+    ]
+}
