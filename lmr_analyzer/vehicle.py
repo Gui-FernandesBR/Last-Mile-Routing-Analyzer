@@ -1,10 +1,7 @@
-__author__ = "Guilherme Fernandes Alves"
-__license__ = "Mozilla Public License 2.0"
-
-
-class vehicle:
-    def __init__(self, name, capacity):
+class Vehicle:
+    def __init__(self, name: str, capacity: float):
         self.name = name
         self.capacity = capacity
 
-        return None
+    def __repr__(self) -> str:
+        return f"'Vehicle(name={self.name}, capacity={self.capacity})'"

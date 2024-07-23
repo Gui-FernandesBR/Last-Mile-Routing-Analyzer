@@ -1,86 +1,66 @@
-__author__ = "Guilherme Fernandes Alves"
-__email__ = "gf10.alves@gmail.com"
-__license__ = "Mozilla Public License 2.0"
-
-
 import warnings
+from datetime import datetime
 from multiprocessing import Pool
+from typing import Union
 
 import numpy as np
 import requests
 import shapely
-from scipy.spatial import ConvexHull
+from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from shapely.geometry import Point, Polygon
 
-from .stop import stop
+from .stop import Stop
 from .utils import get_distance
+from .vehicle import Vehicle
 
 
-class route:
-    """Store all the relevant information regarding one route. A route is defined
+class Route:
+    """
+    Store all the relevant information regarding one route. A route is defined
     as a sequence of stops that a vehicle follows in a specific day. The route
     object can be defined by a list of stops or a dictionary of stops, not
     necessarily in the correct order. After that, the user can set either the
     planned sequence, the actual sequence, or both. The planned sequence is the
-    sequence of stops that the route is supposed to follow, usually determined by
-    the route planner. The actual sequence is the sequence of stops that the route
-    actually followed.
-
-    Attributes
-    ----------
-    name : string
-        The name of the route.
-    ...
-
+    sequence of stops that the route is supposed to follow, usually determined
+    by the route planner. The actual sequence is the sequence of stops that the
+    route actually followed.
     """
 
     def __init__(
-        self, name: str, stops: dict, departure_time=None, vehicle=None
+        self,
+        name: str,
+        stops: Union[list[Stop], dict[str, Stop]],
+        departure_time: Union[datetime, None] = None,
+        vehicle: Union[Vehicle, None] = None,
     ) -> None:
         """Initialize the route object.
 
         Parameters
         ----------
-        name : string
-            The name of the route.
         stops : list, dict
-            A list or dictionary containing the stops of the route. Each stop must be of type
-            stop. If dictionary, the keys must be the stop names and the values must be the
-            stop objects.
-        departure_time : datetime.time
-            The departure time of the route.
-            If None, ...
-        vehicle : string
-            The vehicle that follows the route.
-
-        Returns
-        -------
-        None
+            A list or dictionary containing the stops of the route. If
+            dictionary, the keys must be the stop names and the values must be
+            the stop objects.
         """
         # TODO: Decide what to-do in case the departure time is None
 
         # Save arguments as attributes
-        self.name, self.stops, self.departure_time, self.vehicle = (
-            name,
-            stops,
-            departure_time,
-            vehicle,
-        )
+        self.name = name
+        self.stops = stops
+        self.departure_time = departure_time
+        self.vehicle = vehicle
 
         # Get the names of the stops and the number of stops
-        try:
+        if isinstance(stops, dict):
             self.stops_names = list(self.stops.keys())
-        except AttributeError:
-            # The stops are not a dictionary, so they are a list
-            # Convert to dictionary and try again
+        elif isinstance(stops, list):
             self.stops = {x.name: x for x in self.stops}
             self.stops_names = list(self.stops.keys())
+
         self.number_of_stops = len(self.stops_names)
 
-        return None
-
     def __get_distance_from_dist_matrix(
-        self, distance_matrix: dict, stop: stop
+        self, distance_matrix: dict, stop: Stop
     ) -> float:
         """Auxiliary function to get the distance from a distance matrix.
 
@@ -92,28 +72,24 @@ class route:
             {
                 ...
             }
-        stop : stop
-            The stop object to be used to retrieve the distance from the
-            distance matrix.
 
         Returns
         -------
-        d: float
+        float
             Distance, in the same units as the distance matrix. If not found,
             returns np.nan
         """
-        d = float(
+        return float(
             (
                 distance_matrix.get(self.name, {})
                 .get(stop.name, {})
                 .get("distance_to_next(km)", np.nan)
             )
         )
-        return d
 
     # Setter methods
 
-    def set_planned_sequence(self, sequence: list) -> None:
+    def set_planned_sequence(self, sequence: list[Stop]) -> None:
         """Set the planned sequence of the route. The planned sequence is the
         sequence of stops that the route is supposed to follow, usually
         determined by the route planner.
@@ -124,26 +100,14 @@ class route:
             A list containing the stops that the route is supposed to follow.
             It can receive a list of stops or a list of stop names. The items
             must be in the correct order of the planned sequence of the route.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        ValueError
-            In case at least one of the items in the sequence is not of type
-            stop.
         """
 
         # Can receive a list of stops or a list of stop names
-        if all(isinstance(x, stop) for x in sequence):
-            # In case the sequence is a list of stops
-            # This MUST be a list of stops, not a dictionary
-            self.planned_sequence = sequence
+        if all(isinstance(x, Stop) for x in sequence):
+            self.planned_sequence: list[Stop] = sequence
         elif all(isinstance(x, str) for x in sequence):
             # In case it receives a list of stop names
-            self.planned_sequence = [self.stops[x] for x in sequence]
+            self.planned_sequence: list[Stop] = [self.stops[x] for x in sequence]
         else:
             raise ValueError(
                 "Invalid sequence: all elements must be of type stop or str."
@@ -152,9 +116,7 @@ class route:
         self.number_of_planned_stops = len(self.planned_sequence)
         self.planned_sequence_names = [x.name for x in self.planned_sequence]
 
-        return None
-
-    def set_actual_sequence(self, sequence: list) -> None:
+    def set_actual_sequence(self, sequence: Union[list[Stop], list[str]]) -> None:
         """Set the actual sequence of the route. The actual sequence is the
         sequence of stops that the route is supposed to follow, usually
         determined by the route planner.
@@ -165,20 +127,10 @@ class route:
             A list containing the stops that the route is supposed to follow.
             It can receive a list of stops or a list of stop names. The items
             must be in the correct order of the actual sequence of the route.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        ValueError
-            In case at least one of the items in the sequence is not of type
-            stop.
         """
 
         # Can receive a list of stops or a list of stop names
-        if all(isinstance(x, stop) for x in sequence):
+        if all(isinstance(x, Stop) for x in sequence):
             # In case the sequence is a list of stops
             # This MUST be a list of stops, not a dictionary
             self.actual_sequence = sequence
@@ -193,22 +145,9 @@ class route:
         self.number_of_actual_stops = len(self.actual_sequence)
         self.actual_sequence_names = [x.name for x in self.actual_sequence]
 
-        return None
-
-    def set_vehicle(self, vehicle) -> None:
-        """Set the vehicle that follows the route.
-
-        Parameters
-        ----------
-        vehicle : lmr_analyzer.vehicle
-            The vehicle that follows the route.
-
-        Returns
-        -------
-        None
-        """
+    def set_vehicle(self, vehicle: Vehicle) -> None:
+        """Set the vehicle that follows the route."""
         self.vehicle = vehicle
-        return None
 
     # Analyzing route quality
 
@@ -218,22 +157,13 @@ class route:
         in the correct position in the actual sequence. The adherence is
         calculated as the number of stops in the correct position divided by
         the number of stops in the planned sequence.
-
-        Returns
-        -------
-        None
-
-        Raises
-        ------
-        ValueError
-            In case the planned or the actual sequence is not defined.
         """
         # TODO: Test adherence calculation
         if not (self.number_of_actual_stops and self.number_of_planned_stops):
             raise ValueError("Actual and planned sequences must be set.")
 
-        # Get the number of stops that are in the planned sequence but not in the actual sequence
-        # and vice-versa
+        # Get the number of stops that are in the planned sequence but not in
+        # the actual sequence and vice-versa
         self.number_of_planned_stops_not_in_actual_sequence = len(
             set(self.planned_sequence_names) - set(self.actual_sequence_names)
         )
@@ -241,7 +171,7 @@ class route:
             set(self.actual_sequence_names) - set(self.planned_sequence_names)
         )
 
-        # Calculate the sequence adherence (source: GitHub copilot)
+        # Calculate the sequence adherence
         self.sequence_adherence = (
             1
             - (
@@ -250,8 +180,6 @@ class route:
             )
             / self.number_of_planned_stops
         )
-
-        return None
 
     def evaluate_route_status(self) -> None:
         """Evaluate the general status of the route. This provides a summary of
@@ -268,9 +196,6 @@ class route:
             - Percentage of rejected packages within the route
             - Percentage of failed attempted packages within the route
 
-        Returns
-        -------
-        None
         """
 
         # Initialize the route status
@@ -354,22 +279,10 @@ class route:
             "failed_attempted_packages_percentage": self.failed_attempted_packages_percentage,
         }
 
-        return None
-
-    def evaluate_route_scores(self) -> None:
-        print("Hey, I will develop this later.")
-        return None
-
-    # Analyzing route times
-
-    def calculate_route_times(self) -> None:
-        print("Hey, I will develop this later.")
-        return None
-
     # Analyzing route distances and circuity factors
 
     def __calculate_euclidean_distances(self, sequence: list, name: str) -> None:
-        """Evaluate the euclidean distances between the stops of the route.
+        """Evaluate the Euclidean distances between the stops of the route.
         It assumes that after the last stop the vehicle returns to the first
         stop. It creates a list of distances between the stops and save it as
         an attribute of the route. The name argument defines the name of the
@@ -381,9 +294,6 @@ class route:
             A list containing the stops of the route.
         name : str
             The name of the attribute that will be created at the end.
-        Returns
-        -------
-        None
         """
         # TODO: Add a multiprocessing option
 
@@ -391,7 +301,7 @@ class route:
             warnings.warn(
                 f"Sequence is empty. The '{name}' attribute will be set as a null array."
             )
-            self.__setattr__(name, np.array([]))
+            self.__dict__[name] = np.array([])
             return None
 
         # Create a list of distances between the stops
@@ -413,31 +323,18 @@ class route:
         distances.append(final_distance[0])
 
         # Save the distances as an attribute of the route
-        self.__setattr__(name, np.array(distances))
+        setattr(self, name, np.array(distances))
 
-        return None
-
-    def evaluate_euclidean_distances(self, planned=False, actual=False) -> None:
+    def evaluate_euclidean_distances(
+        self, planned: bool = False, actual: bool = False
+    ) -> None:
         """Evaluate the euclidean distances between the stops of the route.
         It assumes that after the last stop the vehicle returns to the first
         stop. It creates a list of distances between the stops and save it as
         an attribute of the route.
-
-        Parameters
-        ----------
-        planned : bool, optional
-            If True, it will evaluate the euclidean distances between the
-            planned stops of the route, by default False
-        actual : bool, optional
-            If True, it will evaluate the euclidean distances between the
-            actual stops of the route, by default False
-
-        Returns
-        -------
-        None
         """
 
-        # Calculate the euclidean distances between the stops
+        # Calculate the Euclidean distances between the stops
         if planned:
             self.__calculate_euclidean_distances(
                 self.planned_sequence, "planned_euclidean_distances"
@@ -467,10 +364,8 @@ class route:
             self.max_actual_euclidean_distance = np.max(self.actual_euclidean_distances)
             self.min_actual_euclidean_distance = np.min(self.actual_euclidean_distances)
 
-        return None
-
     def __calculate_driving_distances(
-        self, sequence: list, name: str, mode="osm", multiprocessing=False
+        self, sequence: list, name: str, mode="osm", multiprocessing: bool = False
     ) -> None:
         session = requests.Session()
         # First check if the sequence is empty
@@ -508,15 +403,15 @@ class route:
         distances_km = [x[0] for x in osm_distances]
         # durations_min = [x[1] for x in osm_distances]
 
-        self.__setattr__(name, distances_km)
+        setattr(self, name, distances_km)
 
         return None
 
     def evaluate_driving_distances(
         self,
-        planned=True,
-        actual=True,
-        mode="osm",
+        planned: bool = False,
+        actual: bool = True,
+        mode="osm",  # TODO: should be an Enum
         multiprocessing=False,
         planned_distance_matrix=None,
         actual_distance_matrix=None,
@@ -528,12 +423,6 @@ class route:
 
         Parameters
         ----------
-        actual: bool
-            If True, it evaluates the driving distances between the stops of
-            the actual sequence.
-        planned: bool
-            If True, it evaluates the driving distances between the stops of
-            the planned sequence.
         mode: str, optional
             The mode to be used to calculate the driving distances. It can be
             either "osmnx" or ...
@@ -617,24 +506,13 @@ class route:
             )
             self.total_actual_driving_distance = sum(self.actual_driving_distances)
 
-        return None
-
-    def evaluate_circuity_factor(self, planned=True, actual=True) -> None:
+    def evaluate_circuity_factor(
+        self, planned: bool = True, actual: bool = True
+    ) -> None:
         """Evaluate the circuity factor of the route. It is defined as the ratio
         between the driving distance and the euclidean distance. Booleans
         arguments allow to evaluate the circuity factor of the planned and/or
         actual sequence.
-
-        Parameters
-        ----------
-        actual: bool
-            If True, it evaluates the circuity factor of the actual sequence.
-        planned: bool
-            If True, it evaluates the circuity factor of the planned sequence.
-
-        Returns
-        -------
-        None
         """
 
         if planned:
@@ -682,18 +560,11 @@ class route:
             )
             self.med_actual_circuity_factor = np.median(self.actual_circuity_factors)
 
-        return None
-
     # Analyzing routes shape and area
 
-    def find_bbox(self) -> None:
+    def find_bbox(self, verbose=False) -> None:
         """Find the bounding box of the route. It is defined as the minimum
-        rectangle that contains all the stops of the route.
-
-        Returns
-        -------
-        None
-        """
+        rectangle that contains all the stops of the route."""
 
         # Find the bounding box of the route
 
@@ -705,6 +576,7 @@ class route:
                 max([x.location[1] for x in self.planned_sequence]),
             ]
             # Calculate the area considering the earth an sphere
+            # 6371 is the radius of the earth in km, area in km^2
             self.planned_bbox_area = (
                 4
                 * np.pi
@@ -717,7 +589,7 @@ class route:
                     np.radians(self.planned_bbox[3]) - np.radians(self.planned_bbox[1])
                 )
                 / (2 * np.pi)
-            )  # 6371 is the radius of the earth in km, area in km^2
+            )
             print("Awesome! I found the bounding box of the planned route!")
         except AttributeError:
             warnings.warn("Could not find the bounding box of the planned sequence.")
@@ -725,12 +597,12 @@ class route:
 
         try:
             self.actual_bbox = [
-                min([x.location[0] for x in self.actual_sequence]),  # min lat
-                min([x.location[1] for x in self.actual_sequence]),  # min lon
-                max([x.location[0] for x in self.actual_sequence]),  # max lat
-                max([x.location[1] for x in self.actual_sequence]),  # max lon
+                min(x.location[0] for x in self.actual_sequence),  # min lat
+                min(x.location[1] for x in self.actual_sequence),  # min lon
+                max(x.location[0] for x in self.actual_sequence),  # max lat
+                max(x.location[1] for x in self.actual_sequence),  # max lon
             ]
-            # Calculate the area considering the earth an sphere
+            # Calculate the area considering the earth a sphere
             self.actual_bbox_area = (
                 4
                 * np.pi
@@ -747,12 +619,11 @@ class route:
                 self.actual_bbox[2] - self.actual_bbox[0]
             ) / (self.actual_bbox[3] - self.actual_bbox[1])
 
-            print("Awesome! I found the bounding box of the actual sequence.")
+            if verbose:
+                print("Awesome! I found the bounding box of the actual sequence.")
         except AttributeError:
             warnings.warn("Could not find the bounding box of the actual sequence.")
             self.actual_bbox = None
-
-        return None
 
     @staticmethod  # TODO: Test!
     def minimum_rotated_rectangle(coords: np.array):
@@ -775,9 +646,9 @@ class route:
             )
         )
         # Find the center of the minimum rotated rectangle
-        center = Point(
-            (min_rect[1].x + min_rect[2].x) / 2, (min_rect[1].y + min_rect[2].y) / 2
-        )
+        # center = Point(
+        #     (min_rect[1].x + min_rect[2].x) / 2, (min_rect[1].y + min_rect[2].y) / 2
+        # )
         # Find the angle of the minimum rotated rectangle
         angle = (
             np.arctan2(min_rect[2].y - min_rect[1].y, min_rect[2].x - min_rect[1].x)
@@ -804,10 +675,6 @@ class route:
     def find_minimum_rotated_rectangle(self) -> None:
         """Find the minimum rotated rectangle of the route. It is defined as the
         minimum rectangle that contains all the stops of the route.
-
-        Returns
-        -------
-        None
         """
 
         # Find the minimum rotated rectangle of the route
@@ -839,26 +706,14 @@ class route:
         return None
 
     def create_convex_hull_polygon(self) -> None:
-        """Create a polygon that represents the convex hull of the route.
-
-        Returns
-        -------
-        None
-        """
+        """Create a polygon that represents the convex hull of the route."""
         points = np.array([x.location for x in self.stops.values])
         hull = ConvexHull(points)
         self.convex_hull_coords = hull.points[hull.vertices]
         self.convex_hull_polygon = Polygon(points[hull.vertices])
 
-        return None
-
     def calculate_convex_hull_polygon_area(self):
-        """Calculate the area of the convex hull polygon.
-
-        Returns
-        -------
-        None
-        """
+        """Calculate the area of the convex hull polygon."""
         try:
             self.convex_hull_polygon_area = self.convex_hull_polygon.area
         except AttributeError:
@@ -866,15 +721,9 @@ class route:
             self.convex_hull_polygon_area = self.convex_hull_polygon.area
         print("Awesome! I calculated the area of the convex hull polygon!")
 
-        return None
-
     def create_location_types_dictionary(self) -> None:
         """Create two dictionaries that contain the stops separated by location
         type.
-
-        Returns
-        -------
-        None
         """
         # Create a dictionary that contains the location types of the stops
         self.depots_dict = {}
@@ -890,42 +739,20 @@ class route:
         self.number_of_delivery_stops = len(self.delivery_points_dict)
         self.number_of_depots = len(self.depots_dict)
 
-        return None
-
-    def create_delivery_locations_list(self) -> None:
-        """Create a list with the delivery locations. This is powerful for
-        excluding the depots from the analysis.
-
-        Returns
-        -------
-        None
-        """
-        locations = []
-        for x in self.stops.values():
-            if x.location_type != "delivery":
-                continue
-            locations.append(x.location)
-        # TODO: Do the same but using list comprehension
-
-        self.delivery_locations_list = locations
-
-        return None
+    @property
+    def delivery_locations_list(self) -> list:
+        """Create a list with the delivery locations, excluding the depots from the analysis."""
+        return [
+            x.location for x in self.stops.values() if x.location_type == "delivery"
+        ]
 
     # TODO: Test!
     def calculate_route_centroid(self) -> None:
         """Calculate the centroid of the route, providing mean coordinates and
         its standard deviation and coefficient of variance as well.
-
-        Returns
-        -------
-        None
         """
 
-        try:
-            locations = self.delivery_locations_list
-        except AttributeError:
-            self.create_delivery_locations_list()
-            locations = self.delivery_locations_list
+        locations = self.delivery_locations_list
 
         try:
             coords = np.array([[x[0], x[1]] for x in locations])
@@ -955,54 +782,30 @@ class route:
             self.actual_sequence_centroid_std = (np.nan, np.nan)
             self.actual_sequence_centroid_coeff_var = (np.nan, np.nan)
 
-        return None
-
     # TODO: Test!
     # Fit the convex hull polygon to an ellipse
     def fit_convex_hull_polygon_to_rectangle(self):
-        """Fit the convex hull polygon to an ellipse.
+        """Fit the convex hull polygon to an ellipse."""
 
-        Returns
-        -------
-        None
-        """
-        try:
-            self.convex_hull_polygon_area
-        except AttributeError:
+        if not hasattr(self, "convex_hull_polygon_area"):
             self.calculate_convex_hull_polygon_area()
 
-        try:
-            self.convex_hull_polygon
-        except AttributeError:
+        if not hasattr(self, "convex_hull_polygon"):
             self.create_convex_hull_polygon()
 
-        # Fit the polygon to an ellipse
         self.convex_hull_polygon_ellipse = (
             self.convex_hull_polygon.minimum_rotated_rectangle
         )
-
-        # Calculate the area of the ellipse
         self.convex_hull_polygon_ellipse_area = self.convex_hull_polygon_ellipse.area
-
-        # Calculate the ratio between the area of the polygon and the area of the ellipse
         self.convex_hull_polygon_ellipse_area_ratio = (
             self.convex_hull_polygon_area / self.convex_hull_polygon_ellipse_area
         )
 
-        return None
+    @property
+    def distance_to_depots(self) -> dict:
+        """distance to the nearest depot as a dictionary of distances."""
 
-    def distance_to_depots(self) -> None:
-        """Calculate the distance to the nearest depot.
-
-        Returns
-        -------
-        None
-        """
-
-        # Get the locations dictionary
         locations = self.delivery_locations_list
-
-        # Get the depots dictionary
         depots = locations["depot"]
 
         # distance between centroid and each depot
@@ -1012,29 +815,4 @@ class route:
                 self.actual_sequence_centroid_mean, depot.location, "haversine"
             )
 
-        # Save attributes
-        self.distances_depot_dict = distances
-
-        return None
-
-    # Export and visualize route
-
-    def print_info(self):
-        return None
-
-    def plot_route(self, return_figure=False):
-        return None
-
-    def plot_stops(self, return_figure=False):
-        return None
-
-    @classmethod
-    def load_from_file(cls, filename):
-        return None
-
-    def save_to_file(self, filename):
-        return None
-
-
-# TODO: Calculate distance to DC
-# TODO: Double check every calculate/evaluate method name
+        return distances

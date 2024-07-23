@@ -1,37 +1,21 @@
-__author__ = "Guilherme Fernandes Alves"
-__license__ = "Mozilla Public License 2.0"
-
 import json
 import time
 from datetime import datetime
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytz
 
-from .package import package as package_class
-from .route import route as route_class
-from .stop import stop as stop_class
-from .vehicle import vehicle as vehicle_class
+from .package import Package
+from .route import Route
+from .stop import Stop
+from .vehicle import Vehicle
 
 
-class bbox:
-    """Auxiliary class to store bounding box information
+class BoundingBox:
+    """Auxiliary class to store bounding box information."""
 
-    Attributes
-    ----------
-    name : str
-        The name of the bounding box
-    lat_min : float
-        The minimum latitude of the bounding box
-    lon_min : float
-        The minimum longitude of the bounding box
-    lat_max : float
-        The maximum latitude of the bounding box
-    lon_max : float
-        The maximum longitude of the bounding box
-    """
-
-    def __init__(self, name, lat1, lat2, lon1, lon2):
+    def __init__(self, name: str, lat1: float, lat2: float, lon1: float, lon2: float):
         """Constructor for the bbox class
 
         Parameters
@@ -46,10 +30,6 @@ class bbox:
             The maximum latitude of the bounding box
         lon2 : float
             The maximum longitude of the bounding box
-
-        Returns
-        -------
-        None
         """
         self.name = name
         self.lat_min = min(lat1, lat2)
@@ -57,47 +37,21 @@ class bbox:
         self.lat_max = max(lat1, lat2)
         self.lon_max = max(lon1, lon2)
 
-        return None
 
-
-class amzSerializer:
+class AmazonSerializer:
     """A serializer for the Amazon data. The serializer is used to convert the
     Amazon data into a format that can be used by the LMR algorithm.
-
-    Attributes
-    ----------
-    root_directory : str
-        The root directory of the database.
-
-
-    Methods
-    -------
-    serialize_all(root_directory)
-        Serializes all the data in the database.
-    ...
-
     """
 
-    def __init__(self, root_directory=None):
-        """Initializes the serializer.
-
-        Parameters
-        ----------
-        root_directory : str
-            The root directory of the database.
-
-        Returns
-        -------
-        None
-        """
+    def __init__(self, root_directory: str = None):
+        """Initializes the serializer"""
         # TODO: Special case for missing files
         # TODO: Check contents on the directory before loading the data
 
         self.serialize_all(root_directory)
 
-        return None
-
-    def serialize_packages(self, packages_dict):
+    @staticmethod
+    def serialize_packages(packages_dict):
         """Serializes a package object into a dictionary. The dictionary can be
         used to create a new package object for each package present in the
         packages_dict.
@@ -113,18 +67,13 @@ class amzSerializer:
         dict
             A dictionary containing the serialized packages. The dictionary is
             in the form ...
-
-        Raises
-        ------
-        ValueError
-            If the packages_dict is not in the correct format.
         """
 
-        for index1, route_id in enumerate(packages_dict):
-            for index2, stop_id in enumerate(packages_dict[route_id]):
+        for route_id in packages_dict:
+            for stop_id in packages_dict[route_id]:
                 # Iterate through the packages in the current stop
                 for package_id, values in packages_dict[route_id][stop_id].items():
-                    if isinstance(values, package_class):
+                    if isinstance(values, Package):
                         continue
 
                     else:
@@ -140,7 +89,7 @@ class amzSerializer:
                             )
 
                         # Create one package object
-                        pck = package_class(
+                        pck = Package(
                             name=package_id,
                             dimensions=(
                                 values["dimensions"]["depth_cm"],
@@ -148,8 +97,8 @@ class amzSerializer:
                                 values["dimensions"]["width_cm"],
                             ),
                             status=status,
-                            weight=None,
-                            price=None,
+                            weight=0,
+                            price=0,
                         )
 
                         # Add the package to the package dictionary
@@ -165,7 +114,9 @@ class amzSerializer:
 
         return packages_dict
 
-    def serialize_routes(self, routes_dict, packages_dict, bbox_list=None):
+    def serialize_routes(
+        self, routes_dict: dict, packages_dict: dict, bbox_list: list = None
+    ):
         """Serializes a route object into a dictionary. The dictionary can be
         used to create a new route object for each route present in the
         routes_dict.
@@ -187,17 +138,12 @@ class amzSerializer:
         routes_dict: dict
             A dictionary containing the serialized routes. The dictionary is
             in the form ...
-
-        Raises
-        ------
-        ValueError
-            If the routes_dict is not in the correct format.
         """
 
         # Initialize the bounding box list
         if bbox_list is None:
             # Define all the five standard bounding box
-            los_angeles = bbox(
+            los_angeles = BoundingBox(
                 name="Los Angeles",
                 lat1=36,
                 lat2=30,
@@ -205,7 +151,7 @@ class amzSerializer:
                 lon2=-120,
             )
 
-            seattle = bbox(
+            seattle = BoundingBox(
                 name="Seattle",
                 lat1=50,
                 lat2=46,
@@ -213,9 +159,9 @@ class amzSerializer:
                 lon2=-120,
             )
 
-            chicago = bbox(name="Chicago", lat1=41, lat2=43, lon1=-90, lon2=-86)
+            chicago = BoundingBox(name="Chicago", lat1=41, lat2=43, lon1=-90, lon2=-86)
 
-            boston = bbox(
+            boston = BoundingBox(
                 name="Boston",
                 lat1=41,
                 lat2=44,
@@ -223,7 +169,7 @@ class amzSerializer:
                 lon2=-70,
             )
 
-            austin = bbox(
+            austin = BoundingBox(
                 name="Austin",
                 lat1=31,
                 lat2=29,
@@ -237,11 +183,11 @@ class amzSerializer:
             self.bbox_list = bbox_list
 
         for route_id, route in routes_dict.items():
-            if isinstance(routes_dict[route_id], route_class):
+            if isinstance(routes_dict[route_id], Route):
                 continue
 
-            for index2, stop_id in enumerate(routes_dict[route_id]["stops"]):
-                if isinstance(routes_dict[route_id]["stops"][stop_id], stop_class):
+            for stop_id in routes_dict[route_id]["stops"]:
+                if isinstance(routes_dict[route_id]["stops"][stop_id], Stop):
                     continue
 
                 lc_type = routes_dict[route_id]["stops"][stop_id]["type"]
@@ -252,7 +198,7 @@ class amzSerializer:
                 else:
                     raise ValueError(f"Invalid location type, please check {lc_type}")
 
-                stop = stop_class(
+                stop = Stop(
                     name=stop_id,
                     location=(
                         routes_dict[route_id]["stops"][stop_id]["lat"],
@@ -266,7 +212,7 @@ class amzSerializer:
 
                 routes_dict[route_id]["stops"][stop_id] = stop
 
-            vehicle = vehicle_class(
+            vehicle = Vehicle(
                 name="random_vehicle",
                 capacity=routes_dict[route_id]["executor_capacity_cm3"],
             )
@@ -275,7 +221,7 @@ class amzSerializer:
             hour = [
                 int(x) for x in routes_dict[route_id]["departure_time_utc"].split(":")
             ]
-            route = route_class(
+            route = Route(
                 name=route_id,
                 stops=routes_dict[route_id]["stops"],
                 departure_time=datetime(
@@ -371,29 +317,12 @@ class amzSerializer:
 
         return actual_sequences
 
-    def serialize_travel_times(self, travel_times):
-        # TODO: Implement travel times serialization
-        return None
-
-    def serialize_all(self, root_directory):
-        """Serializes all the files in the root directory.
-
-        Parameters
-        ----------
-        root_directory : str
-            The root directory containing the files to be serialized.
-
-        Returns
-        -------
-        None
-        """
+    def serialize_all(self, root_directory: str):
+        """Serializes all the files in the root directory."""
         start = time.time()
 
         # Read the package data
-        with open(
-            f"{root_directory}/package_data.json",
-            "r",
-        ) as outfile:
+        with open(f"{root_directory}/package_data.json", "r") as outfile:
             db_package = json.load(outfile)
         outfile.close()
         packages_dict = db_package.copy()
@@ -411,17 +340,10 @@ class amzSerializer:
         self.packages_dict = packages_dict
         self.total_packages = total_packages
         pck_time = time.time()
-        print(
-            "package_data.json has been loaded in {:.2f} seconds.".format(
-                pck_time - start
-            )
-        )
+        print(f"package_data.json has been loaded in {pck_time - start:.2f} seconds.")
 
         # Read the route data
-        with open(
-            f"{root_directory}/route_data.json",
-            "r",
-        ) as outfile:
+        with open(f"{root_directory}/route_data.json", "r") as outfile:
             db_route = json.load(outfile)
         outfile.close()
         routes_dict = db_route.copy()
@@ -435,16 +357,11 @@ class amzSerializer:
         self.total_routes = len(self.routes_dict)
         route_time = time.time()
         print(
-            "route_data.json has been loaded in {:.2f} seconds.".format(
-                route_time - pck_time
-            )
+            f"route_data.json has been loaded in {route_time - pck_time:.2f} seconds."
         )
 
         # Read the actual sequences
-        with open(
-            f"{root_directory}/actual_sequences.json",
-            "r",
-        ) as outfile:
+        with open(f"{root_directory}/actual_sequences.json", "r") as outfile:
             db_ac_sequences = json.load(outfile)
         ac_sequences_dict = db_ac_sequences.copy()
 
@@ -470,8 +387,6 @@ class amzSerializer:
                 time.time() - start
             )
         )
-
-        return None
 
     def time_history_analysis(self, routes_dict):
         # Hey, I will document this later
@@ -526,8 +441,8 @@ class amzSerializer:
 
     def __create_times_dict(self, times):
         times_by_day = {}
-        for time, stops in times:
-            day = time.date()
+        for t, stops in times:
+            day = t.date()
             if day not in times_by_day:
                 times_by_day[day] = 0
             times_by_day[day] += stops
@@ -535,7 +450,6 @@ class amzSerializer:
 
     def plot_time_analysis(self, routes_dict):
         # Plot the number of stops by day
-        import matplotlib.pyplot as plt
 
         plt.figure(figsize=(8, 4))
         plt.bar(routes_dict.keys(), routes_dict.values())
@@ -549,34 +463,22 @@ class amzSerializer:
         plt.show()
         # plt.savefig(filename, dpi=300)
 
-        return None
-
     def print_info_by_city(self):
-        """Prints the number of routes by city.
-
-        Returns
-        -------
-        None
-        """
+        """Prints the number of routes by city."""
         s = 0
-        for city, dict in self.routes_dict.items():
-            print(f"Number of routes in {city:12}: {len(dict)}")
-            s += len(dict)
+        for city, dictionary in self.routes_dict.items():
+            print(f"Number of routes in {city:12}: {len(dictionary)}")
+            s += len(dictionary)
         print(f"Total number of routes: {s:13}\n")
 
         # Print the percentage of each city
-        for city, dict in self.routes_dict.items():
-            print(f"Percentage of routes in {city:12}: {len(dict) / s * 100:.2f}%")
-
-        return None
+        for city, dictionary in self.routes_dict.items():
+            print(
+                f"Percentage of routes in {city:12}: {len(dictionary) / s * 100:.2f}%"
+            )
 
     def print_info(self):
-        """Prints the information about the loaded database.
-
-        Returns
-        -------
-        None
-        """
+        """Prints the information about the loaded database."""
 
         # Package Data
         print(
@@ -601,11 +503,8 @@ class amzSerializer:
             )
         )
 
-        # Print information separated by city
         print("Routes by city:")
-        self.print_info_by_city(self.routes_dict)
-
-        return None
+        self.print_info_by_city()
 
     def export_routes_to_csv(
         self, city: str = "Los Angeles", filename="routes.csv"
@@ -622,8 +521,6 @@ class amzSerializer:
                             route.name, stop.name, stop.location[0], stop.location[1]
                         )
                     )
-
-        return None
 
 
 # TODO: Improve print methods
