@@ -1,0 +1,7 @@
+[MESSAGES CONTROL]
+
+disable=fixme,
+        missing-docstring,
+        attribute-defined-outside-init,
+        unspecified-encoding,
+        missing-timeout,

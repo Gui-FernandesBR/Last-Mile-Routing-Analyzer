@@ -26,7 +26,6 @@ docs/_build/
 
 # IDEs ans venvs
 .venv/
-.vscode/
 
 # Caches
 cache
@@ -34,3 +33,12 @@ cache
 
 # Amazon S3
 amazon-last-mile-challenges/
+
+
+TRB2025/outputs
+TRB2025/test-figures/
+TRB2025/outputs-ellipses
+
+.env
+
+.idea/

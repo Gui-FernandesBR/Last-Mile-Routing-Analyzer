@@ -53,3 +53,6 @@ notebooks = [
 
 [project.urls]
 Home = "https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer"
+
+[tools.isort]
+profile = "black"
