@@ -41,7 +41,7 @@ def drive_distance_osm(origin, destination, i, n):
     )  # lon1, lat1, lon2, lat2
 
     # Get the driving distance from the OpenStreetMaps API
-    url = "http://router.project-osrm.org/route/v1/driving/{}".format(coordinates)
+    url = f"http://router.project-osrm.org/route/v1/driving/{coordinates}"
     res = session.get(url).json()
 
     # Check if the route was properly found, raise an error if not
