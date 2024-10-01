@@ -1,3 +1,4 @@
+import csv
 import json
 import time
 from datetime import datetime
@@ -141,7 +142,7 @@ class AmazonSerializer:
         """
 
         # Initialize the bounding box list
-        if bbox_list is None:
+        if not bbox_list:
             # Define all the five standard bounding box
             los_angeles = BoundingBox(
                 name="Los Angeles",
@@ -206,7 +207,6 @@ class AmazonSerializer:
                     ),
                     location_type=lc_type,
                     time_window=(0, 0),
-                    planned_service_time=0,
                     packages=packages_dict[route_id][stop_id],
                 )
 
@@ -232,12 +232,11 @@ class AmazonSerializer:
 
             routes_dict[route_id] = route
 
-        # Separate the routes in different bounding boxes
-        routes_dict = self.__separate_routes_by_bbox(routes_dict, self.bbox_list)
+        return self.__separate_routes_by_bbox(routes_dict, self.bbox_list)
 
-        return routes_dict
-
-    def __separate_routes_by_bbox(self, routes_dict, bbox_list):
+    def __separate_routes_by_bbox(
+        self, routes_dict, bbox_list
+    ) -> dict[str, dict[str, Route]]:
         """Separates the routes by bounding box. The routes are separated by
         bounding box to reduce the computational cost of the LMR algorithm.
 
@@ -373,22 +372,17 @@ class AmazonSerializer:
         for route in routes_dict.values():
             route.set_actual_sequence(ac_sequences_dict[route.name])
         ac_sequence_time = time.time()
-        print(
-            "actual_sequences.json has been loaded in {:.2f} seconds.".format(
-                ac_sequence_time - route_time
-            )
-        )
-
-        # Read the travel times data
-        self.serialize_travel_times(travel_times=None)
 
         print(
-            "We are ready to proceed. All files have been loaded in {:.2f} seconds.".format(
-                time.time() - start
-            )
+            "actual_sequences.json has been loaded in "
+            f"{ac_sequence_time - route_time:.2f} seconds."
+        )
+        print(
+            "We are ready to proceed. All files have been loaded in "
+            f"{time.time() - start:.2f} seconds."
         )
 
-    def time_history_analysis(self, routes_dict):
+    def time_history_analysis(self, routes_dict) -> tuple:
         # Hey, I will document this later
         la_times = [
             [r.departure_time, len(r.stops)]
@@ -411,23 +405,14 @@ class AmazonSerializer:
             [r.departure_time, len(r.stops)] for r in routes_dict["Seattle"].values()
         ]
 
-        # Summarize la_times by day
         la_times_by_day = self.__create_times_dict(la_times)
-
-        # Summarize boston_times by day
         boston_times_by_day = self.__create_times_dict(boston_times)
-
-        # Summarize austin_times by day
         austin_times_by_day = self.__create_times_dict(austin_times)
-
-        # Summarize chicago_times by day
         chicago_times_by_day = self.__create_times_dict(chicago_times)
-
-        # Summarize seattle_times by day
         seattle_times_by_day = self.__create_times_dict(seattle_times)
 
         # Store the time range
-        self.time_range = min(chicago_times_by_day.keys()), max(
+        self.time_range: tuple = min(chicago_times_by_day.keys()), max(
             chicago_times_by_day.keys()
         )
 
@@ -496,32 +481,36 @@ class AmazonSerializer:
             f"A total of {len(self.routes_dict)} routes were loaded from route_data.json"
         )
 
-        # Actual Sequences
-        print(
-            "The actual sequence of {} routes were loaded".format(
-                len(self.ac_sequences_dict)
-            )
-        )
-
         print("Routes by city:")
         self.print_info_by_city()
 
     def export_routes_to_csv(
         self, city: str = "Los Angeles", filename="routes.csv"
     ) -> None:
-        # Write Los Angeles coordinates to a file
-        with open(filename, "w") as f:
+
+        with open(filename, "w", newline="") as f:
+            writer = csv.writer(f)
             # Write header
-            f.write("route,stop,lat,lon,distance_to_next_stop(km),duration(min)\n")
+            writer.writerow(
+                [
+                    "route",
+                    "stop",
+                    "lat",
+                    "lon",
+                    "distance_to_next_stop(km)",
+                    "duration(min)",
+                ]
+            )
             # Iterate over routes
             for route in self.routes_dict[city].values():
                 for stop in route.actual_sequence:
-                    f.write(
-                        "{},{},{},{},-,-\n".format(
-                            route.name, stop.name, stop.location[0], stop.location[1]
-                        )
+                    writer.writerow(
+                        [
+                            route.name,
+                            stop.name,
+                            stop.location[0],
+                            stop.location[1],
+                            "-",
+                            "-",
+                        ]
                     )
-
-
-# TODO: Improve print methods
-# TODO: Double check code efficiency and speed up

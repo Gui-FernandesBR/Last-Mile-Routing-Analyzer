@@ -104,6 +104,9 @@ class DistanceMatrix:
             self.origins_names = list(self.matrix.keys())
             self.destinations_names = list(self.matrix[self.origins_names[0]].keys())
 
+    # def __getitem__(self, key):
+    #     return self.matrix[key]
+
     def load_support_matrix_file(self, filename: str) -> None:
         """Loads a support matrix file. A support matrix file is a file containing
         the distance matrix and the origins and destinations coordinates. This

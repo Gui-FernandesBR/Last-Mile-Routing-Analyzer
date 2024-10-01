@@ -561,7 +561,6 @@ class Geometry:
                 ),
             )
 
-            # Save the figure if savefig is True, show otherwise
             if savefig:
                 key = key.replace("/", "-")
                 fig.savefig(
@@ -602,7 +601,7 @@ class Geometry:
         df = pd.DataFrame.from_dict(export_dict, orient="index")
         df.to_csv(filename)
 
-    def export_basic_stats_to_csv(self, filename: str):
+    def export_basic_stats_to_csv(self, filename: str) -> None:
 
         export_dict = {}
 
@@ -614,8 +613,6 @@ class Geometry:
                 "edge_length_total": round(value["edge_length_total"], 3),
                 "edge_length_avg": round(value["edge_length_avg"], 3),
                 "streets_per_node_avg": round(value["streets_per_node_avg"], 3),
-                # "streets_per_node_counts": value["streets_per_node_counts"],
-                # "streets_per_node_proportions": value["streets_per_node_proportions"],
                 "intersection_count": value["intersection_count"],
                 "street_length_total": round(value["street_length_total"], 3),
                 "street_segment_count": value["street_segment_count"],
@@ -627,8 +624,6 @@ class Geometry:
         df = pd.DataFrame.from_dict(export_dict, orient="index")
         df.to_csv(filename)
 
-    # Pickle object to save time in the future
-
     def save(self, filename: str = "geometry") -> None:
         """Save the geometry object to a file so it can be used later."""
 
@@ -639,7 +634,7 @@ class Geometry:
         print("Your geometry object was saved, check it out: " + filename)
 
     @classmethod
-    def load(self, filename: str = "geometry") -> "Geometry":
+    def load(cls, filename: str = "geometry") -> "Geometry":
         """Load a previously saved geometry pickled file.
         Example: city = geometry.load("filename").
         """

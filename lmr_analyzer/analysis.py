@@ -1,3 +1,5 @@
+from functools import cached_property
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -10,6 +12,7 @@ class Analysis:
     def __init__(self, name: str, routes: list[Route]):
         """Initialize the analysis object."""
         self.name, self.routes = (name, routes)
+        self.routes = list(self.routes)
         self.routes_dict = {x.name: x for x in self.routes}
 
     # Time analysis
@@ -52,18 +55,9 @@ class Analysis:
 
     # Circuity Factor analysis
 
-    def calculate_euclidean_distances(
-        self, planned: bool = True, actual: bool = True
-    ) -> None:
-        """Calculate the euclidean distances between all stops for all routes, in
-        case they were not calculated before.
-        """
-        for route in self.routes_dict.values():
-            route.evaluate_euclidean_distances(planned=planned, actual=actual)
-
     def calculate_driving_distances(
         self,
-        planned: bool = True,
+        planned: bool = False,
         actual: bool = True,
         mode="osm",
         multiprocessing: bool = False,
@@ -83,84 +77,80 @@ class Analysis:
                 actual_distance_matrix=actual_distance_matrix,
             )
 
-    def calculate_circuity_factor(self, planned=True, actual=True):
+    def calculate_circuity_factor(self, planned: bool = True):
         """Calculate the circuity factor of all routes."""
         for route in self.routes_dict.values():
-            route.evaluate_circuity_factor(planned, actual)
+            route.evaluate_circuity_factor(planned)
 
     # Package analysis
 
-    def calculate_packages_status(self) -> None:
+    @property
+    def routes_status_dict(self) -> None:
         """Calculate the status of the routes in the analysis."""
         routes_status_dict = {}
         for route in self.routes_dict.values():
-            try:
-                routes_status_dict[route.name] = route.route_status_dict
-            except Exception as _:
-                route.evaluate_route_status()
-                routes_status_dict[route.name] = route.route_status_dict
-        # Save the dictionary
-        self.routes_status_dict = routes_status_dict
+            routes_status_dict[route.name] = route.route_status_dict
 
-        # Calculate the number of stops and packages, as well as other metrics
-        self.__calculate_route_status_metrics()
+        return routes_status_dict
 
-    def __calculate_route_status_metrics(self) -> None:
-        """Calculate the metrics of the routes status. This is an internal method,
-        and should not be called directly. It will be called by the method
-        'calculate_packages_status'.
-        """
-        self.total_number_of_packages = sum(
-            x.route_status_dict["number_of_packages"] for x in self.routes_dict.values()
-        )
+    @property
+    def total_number_of_packages(self):
+        return sum(route.number_of_packages for route in self.routes)
 
-        # Calculate the package status over the routes
-        ## Calculate the percentage of packages that were delivered
-        self.number_of_delivered_packages = sum(
+    @property
+    def number_of_delivered_packages(self):
+        return sum(
             x.route_status_dict["number_of_delivered_packages"]
             for x in self.routes_dict.values()
         )
-        self.delivered_packages_percentage = (
-            self.number_of_delivered_packages / self.total_number_of_packages
-        )
 
-        ## Calculate the percentage of packages that had an delivered attempt with no success
-        self.number_of_failed_attempted_packages = sum(
+    @property
+    def delivered_packages_percentage(self):
+        return self.number_of_delivered_packages / self.total_number_of_packages
+
+    @property
+    def number_of_failed_attempted_packages(self):
+        return sum(
             x.route_status_dict["number_of_failed_attempted_packages"]
             for x in self.routes_dict.values()
         )
-        self.failed_attempted_packages_percentage = (
-            self.number_of_failed_attempted_packages / self.total_number_of_packages
-        )
 
-        ## Calculate the percentage of rejected routes
-        self.number_of_rejected_packages = sum(
+    @property
+    def failed_attempted_packages_percentage(self):
+        return self.number_of_failed_attempted_packages / self.total_number_of_packages
+
+    @property
+    def number_of_rejected_packages(self):
+        return sum(
             x.route_status_dict["number_of_rejected_packages"]
             for x in self.routes_dict.values()
         )
-        self.rejected_packages_percentage = self.number_of_rejected_packages / len(
-            self.routes_dict.values()
-        )
 
-        # Calculate the max number of delivery stops
-        self.max_number_of_delivery_stops = max(
+    @property
+    def rejected_packages_percentage(self):
+        return self.number_of_rejected_packages / len(self.routes_dict.values())
+
+    @property
+    def max_number_of_delivery_stops(self):
+        return max(
             x.route_status_dict["number_of_delivery_stops"]
             for x in self.routes_dict.values()
         )
 
-        # Calculate the max number of depot stops
-        self.max_number_of_pickup_stops = max(
+    @property
+    def max_number_of_pickup_stops(self):
+        return max(
             x.route_status_dict["number_of_pickup_stops"]
             for x in self.routes_dict.values()
         )
 
-        # Calculate the total average package per stop
-        self.average_packages_per_stop = self.total_number_of_packages / (
-            self.max_number_of_delivery_stops
-        )
+    @property
+    def average_packages_per_stop(self):
+        return self.total_number_of_packages / (self.max_number_of_delivery_stops)
 
-        # Summarize the results by a dictionary
-        self.routes_status_metrics = {
+    @cached_property
+    def routes_status_metrics(self) -> dict[str, float]:
+        return {
             "total_number_of_packages": self.total_number_of_packages,
             "number_of_delivered_packages": self.number_of_delivered_packages,
             "delivered_packages_percentage": self.delivered_packages_percentage,
@@ -261,6 +251,7 @@ class Analysis:
 
     # Export methods
 
+    @cached_property
     def summarize_by_routes(self) -> dict:
         """Summarize the information by routes. This is useful for exporting
         purposes.
@@ -305,18 +296,19 @@ class Analysis:
                 "Max Circuity factor per stop": route.max_actual_circuity_factor,
                 "Median Circuity factor per stop": route.med_actual_circuity_factor,
             }  # TODO: Fix total packages %
-
-        # Return the dictionary
         return df
 
-    def export_summary_by_routes(self, filename: str = "summary_by_routes.csv") -> None:
+    def export_summary_by_routes(
+        self, filename: str = "summary_by_routes.csv"
+    ) -> pd.DataFrame:
         """Summarize the status of the routes in the analysis. Each route will be
         represented by its centroid.
         """
 
-        df = self.summarize_by_routes()
+        df = self.summarize_by_routes
         df = pd.DataFrame.from_dict(df, orient="index")
         df.to_csv(filename)
+        return df
 
 
 # TODO: Plot the % rejection vs Circuity factor per route/neighborhood

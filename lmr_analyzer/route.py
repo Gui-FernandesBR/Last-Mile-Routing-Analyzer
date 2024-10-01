@@ -1,5 +1,6 @@
 import warnings
 from datetime import datetime
+from functools import cached_property
 from multiprocessing import Pool
 from typing import Union
 
@@ -46,7 +47,7 @@ class Route:
 
         # Save arguments as attributes
         self.name = name
-        self.stops = stops
+        self.stops: dict[str, Stop] = stops
         self.departure_time = departure_time
         self.vehicle = vehicle
 
@@ -54,7 +55,7 @@ class Route:
         if isinstance(stops, dict):
             self.stops_names = list(self.stops.keys())
         elif isinstance(stops, list):
-            self.stops = {x.name: x for x in self.stops}
+            self.stops: dict[str, Stop] = {x.name: x for x in self.stops}
             self.stops_names = list(self.stops.keys())
 
         self.number_of_stops = len(self.stops_names)
@@ -131,25 +132,29 @@ class Route:
 
         # Can receive a list of stops or a list of stop names
         if all(isinstance(x, Stop) for x in sequence):
-            # In case the sequence is a list of stops
-            # This MUST be a list of stops, not a dictionary
-            self.actual_sequence = sequence
+            # In case the sequence is a list of stops already
+            self.actual_sequence: list[Stop] = sequence
         elif all(isinstance(x, str) for x in sequence):
             # In case it receives a list of stop names
-            self.actual_sequence = [self.stops[x] for x in sequence]
+            self.actual_sequence: list[Stop] = [self.stops[x] for x in sequence]
         else:
             raise ValueError(
                 "Invalid sequence: all elements must be of type stop or str."
             )
-
-        self.number_of_actual_stops = len(self.actual_sequence)
-        self.actual_sequence_names = [x.name for x in self.actual_sequence]
 
     def set_vehicle(self, vehicle: Vehicle) -> None:
         """Set the vehicle that follows the route."""
         self.vehicle = vehicle
 
     # Analyzing route quality
+
+    @property
+    def number_of_planned_stops_not_in_actual_sequence(self):
+        return len(set(self.planned_sequence_names) - set(self.actual_sequence_names))
+
+    @property
+    def number_of_actual_stops_not_in_planned_sequence(self):
+        return len(set(self.actual_sequence_names) - set(self.planned_sequence_names))
 
     def evaluate_sequence_adherence(self) -> None:
         """Evaluate the adherence of the actual sequence to the planned
@@ -162,15 +167,6 @@ class Route:
         if not (self.number_of_actual_stops and self.number_of_planned_stops):
             raise ValueError("Actual and planned sequences must be set.")
 
-        # Get the number of stops that are in the planned sequence but not in
-        # the actual sequence and vice-versa
-        self.number_of_planned_stops_not_in_actual_sequence = len(
-            set(self.planned_sequence_names) - set(self.actual_sequence_names)
-        )
-        self.number_of_actual_stops_not_in_planned_sequence = len(
-            set(self.actual_sequence_names) - set(self.planned_sequence_names)
-        )
-
         # Calculate the sequence adherence
         self.sequence_adherence = (
             1
@@ -181,92 +177,95 @@ class Route:
             / self.number_of_planned_stops
         )
 
-    def evaluate_route_status(self) -> None:
-        """Evaluate the general status of the route. This provides a summary of
-        all the packages available in each stop. Currently, the available metrics
-        are:
-            - Number of packages within the route
-            - Number of delivery stops within the route
-            - Number of pickup stops within the route
-            - Number of delivered packages within the route
-            - Number of rejected packages within the route
-            - Number of failed attempted packages within the route
-            - Average number of packages per stop (excluding depots)
-            - Percentage of delivered packages within the route
-            - Percentage of rejected packages within the route
-            - Percentage of failed attempted packages within the route
+    @property
+    def number_of_actual_stops(self):
+        return len(self.actual_sequence)
 
-        """
+    @property
+    def actual_sequence_names(self):
+        return [x.name for x in self.actual_sequence]
 
-        # Initialize the route status
-        number_of_packages = 0
-        number_of_delivery_stops = 0
-        number_of_pickup_stops = 0
-        number_of_delivered_packages = 0
-        number_of_rejected_packages = 0
-        number_of_failed_attempted_packages = 0
+    @property
+    def number_of_planned_stops(self):
+        return [x.name for x in self.actual_sequence]
 
-        # Iterate through all the stops
-        for stop in self.stops.values():
-            if stop.location_type != "delivery":
-                number_of_pickup_stops += 1
-                continue
-            number_of_delivery_stops += 1
-            number_of_packages += stop.number_of_packages
-            number_of_delivered_packages += stop.number_of_delivered_packages
-            number_of_rejected_packages += stop.number_of_rejected_packages
-            number_of_failed_attempted_packages += (
-                stop.number_of_failed_attempted_packages
-            )
+    @property
+    def number_of_packages(self):
+        # TODO: add the location_type check if stop.location_type == "delivery"
+        return sum(stop.number_of_packages for stop in self.stops.values())
 
-        # Save the results as class attributes
-        self.number_of_packages = number_of_packages
-        self.number_of_delivery_stops = number_of_delivery_stops
-        self.number_of_pickup_stops = number_of_pickup_stops
-        self.number_of_delivered_packages = number_of_delivered_packages
-        self.number_of_rejected_packages = number_of_rejected_packages
-        self.number_of_failed_attempted_packages = number_of_failed_attempted_packages
+    @property
+    def number_of_delivery_stops(self):
+        return sum(
+            1 for stop in self.stops.values() if stop.location_type == "delivery"
+        )
 
-        # Calculate the remaining route status
+    @property
+    def avg_packages_per_stop(self) -> float:
         try:
-            self.avg_packages_per_stop = (
-                number_of_packages / self.number_of_delivery_stops
-            )
+            return self.number_of_packages / self.number_of_delivery_stops
         except ZeroDivisionError:
             warnings.warn(
-                "The route has no delivery stops. The average packages per stop is set to 0."
+                "The route has no delivery stops. "
+                "The average packages per stop is set to 0."
             )
-            self.avg_packages_per_stop = 0
+            return 0
+
+    @property
+    def number_of_pickup_stops(self) -> int:
+        return sum(1 for stop in self.stops.values() if stop.location_type == "pickup")
+
+    @property
+    def number_of_rejected_packages(self) -> int:
+        return sum(stop.number_of_rejected_packages for stop in self.stops.values())
+
+    @property
+    def number_of_delivered_packages(self) -> int:
+        return sum(stop.number_of_delivered_packages for stop in self.stops.values())
+
+    @property
+    def failed_attempted_packages_percentage(self) -> float:
         try:
-            self.rejected_packages_percentage = (
-                self.number_of_rejected_packages * 1000 / self.number_of_packages
-            )
-        except ZeroDivisionError:
-            warnings.warn(
-                "The route has no packages. The rejected packages percentage is set to 0."
-            )
-            self.rejected_packages_percentage = 0
-        try:
-            self.delivered_packages_percentage = (
-                self.number_of_delivered_packages * 1000 / self.number_of_packages
-            )
-        except ZeroDivisionError:
-            warnings.warn(
-                "The route has no packages. The delivered packages percentage is set to 0."
-            )
-            self.delivered_packages_percentage = 0
-        try:
-            self.failed_attempted_packages_percentage = (
+            return (
                 self.number_of_failed_attempted_packages * 100 / self.number_of_packages
             )
         except ZeroDivisionError:
             warnings.warn(
-                "The route has no packages. The failed attempted packages percentage is set to 0."
+                "The route has no packages. "
+                "The failed attempted packages percentage is set to 0."
             )
-            self.failed_attempted_packages_percentage = 0
+            return 0
 
-        # Summarize everything in a dictionary
-        self.route_status_dict = {
+    @property
+    def rejected_packages_percentage(self) -> float:
+        try:
+            return self.number_of_rejected_packages * 1000 / self.number_of_packages
+        except ZeroDivisionError:
+            warnings.warn(
+                "The route has no packages. "
+                "The rejected packages percentage is set to 0."
+            )
+            return 0
+
+    @property
+    def delivered_packages_percentage(self) -> float:
+        try:
+            return self.number_of_delivered_packages * 1000 / self.number_of_packages
+        except ZeroDivisionError:
+            warnings.warn(
+                "The route has no packages. The delivered packages percentage is set to 0."
+            )
+            return 0
+
+    @property
+    def number_of_failed_attempted_packages(self) -> int:
+        return sum(
+            stop.number_of_failed_attempted_packages for stop in self.stops.values()
+        )
+
+    @cached_property
+    def route_status_dict(self) -> dict[str, Union[int, float]]:
+        return {
             "number_of_packages": self.number_of_packages,
             "number_of_delivery_stops": self.number_of_delivery_stops,
             "number_of_pickup_stops": self.number_of_pickup_stops,
@@ -281,28 +280,19 @@ class Route:
 
     # Analyzing route distances and circuity factors
 
-    def __calculate_euclidean_distances(self, sequence: list, name: str) -> None:
+    def __calculate_euclidean_distances(self, sequence: list[Stop]) -> np.ndarray:
         """Evaluate the Euclidean distances between the stops of the route.
         It assumes that after the last stop the vehicle returns to the first
         stop. It creates a list of distances between the stops and save it as
         an attribute of the route. The name argument defines the name of the
         attribute that will be created.
-
-        Parameters
-        ----------
-        sequence : list
-            A list containing the stops of the route.
-        name : str
-            The name of the attribute that will be created at the end.
         """
         # TODO: Add a multiprocessing option
 
         if len(sequence) == 0:
-            warnings.warn(
-                f"Sequence is empty. The '{name}' attribute will be set as a null array."
-            )
-            self.__dict__[name] = np.array([])
-            return None
+            warnings.warn("Sequence is empty. Returning a null array.")
+            # self.__dict__[name] = np.array([])
+            return np.array([])
 
         # Create a list of distances between the stops
         distances = list(
@@ -321,48 +311,48 @@ class Route:
             mode="haversine",
         )
         distances.append(final_distance[0])
+        # setattr(self, name, np.array(distances))
+        return np.array(distances)
 
-        # Save the distances as an attribute of the route
-        setattr(self, name, np.array(distances))
+    @cached_property
+    def actual_euclidean_distances(self):
+        return self.__calculate_euclidean_distances(self.actual_sequence)
 
-    def evaluate_euclidean_distances(
-        self, planned: bool = False, actual: bool = False
-    ) -> None:
-        """Evaluate the euclidean distances between the stops of the route.
-        It assumes that after the last stop the vehicle returns to the first
-        stop. It creates a list of distances between the stops and save it as
-        an attribute of the route.
-        """
+    @property
+    def total_actual_euclidean_distance(self):
+        return np.nansum(self.actual_euclidean_distances)
 
-        # Calculate the Euclidean distances between the stops
-        if planned:
-            self.__calculate_euclidean_distances(
-                self.planned_sequence, "planned_euclidean_distances"
-            )
-            self.total_planned_euclidean_distance = np.sum(
-                self.planned_euclidean_distances
-            )
-            self.avg_planned_euclidean_distance = np.mean(
-                self.planned_euclidean_distances
-            )
-            self.max_planned_euclidean_distance = np.max(
-                self.planned_euclidean_distances
-            )
-            self.min_planned_euclidean_distance = np.min(
-                self.planned_euclidean_distances
-            )
-        if actual:
-            self.__calculate_euclidean_distances(
-                self.actual_sequence, "actual_euclidean_distances"
-            )
-            self.total_actual_euclidean_distance = np.sum(
-                self.actual_euclidean_distances
-            )
-            self.avg_actual_euclidean_distance = np.mean(
-                self.actual_euclidean_distances
-            )
-            self.max_actual_euclidean_distance = np.max(self.actual_euclidean_distances)
-            self.min_actual_euclidean_distance = np.min(self.actual_euclidean_distances)
+    @property
+    def avg_actual_euclidean_distance(self):
+        return np.nanmean(self.actual_euclidean_distances)
+
+    @property
+    def max_actual_euclidean_distance(self):
+        return np.nanmax(self.actual_euclidean_distances)
+
+    @property
+    def min_actual_euclidean_distance(self):
+        return np.nanmin(self.actual_euclidean_distances)
+
+    @cached_property
+    def planned_euclidean_distances(self):
+        return self.__calculate_euclidean_distances(self.planned_sequence)
+
+    @property
+    def total_planned_euclidean_distance(self):
+        return np.nansum(self.planned_euclidean_distances)
+
+    @property
+    def avg_planned_euclidean_distance(self):
+        return np.nanmean(self.planned_euclidean_distances)
+
+    @property
+    def max_planned_euclidean_distance(self):
+        return np.nanmax(self.planned_euclidean_distances)
+
+    @property
+    def min_planned_euclidean_distance(self):
+        return np.nanmin(self.planned_euclidean_distances)
 
     def __calculate_driving_distances(
         self, sequence: list, name: str, mode="osm", multiprocessing: bool = False
@@ -384,8 +374,8 @@ class Route:
             )
 
             # Add the distance between the last stop and the first stop
-            osm_distances.append(
-                get_distance(sequence[-1], sequence[0], mode, session)[0]
+            osm_distances = np.append(
+                osm_distances, get_distance(sequence[-1], sequence[0], mode, session)
             )
 
         else:  # Start the multiprocessing
@@ -404,8 +394,6 @@ class Route:
         # durations_min = [x[1] for x in osm_distances]
 
         setattr(self, name, distances_km)
-
-        return None
 
     def evaluate_driving_distances(
         self,
@@ -444,10 +432,6 @@ class Route:
             {
                 ...
             }
-
-        Returns
-        -------
-        None
         """
 
         if planned_distance_matrix is not None:
@@ -463,10 +447,18 @@ class Route:
             )
 
             # Calculate remaining attributes
-            self.total_planned_driving_distance = np.sum(self.planned_driving_distances)
-            self.avg_planned_driving_distance = np.mean(self.planned_driving_distances)
-            self.max_planned_driving_distance = np.max(self.planned_driving_distances)
-            self.min_planned_driving_distance = np.min(self.planned_driving_distances)
+            self.total_planned_driving_distance = np.nansum(
+                self.planned_driving_distances
+            )
+            self.avg_planned_driving_distance = np.nanmean(
+                self.planned_driving_distances
+            )
+            self.max_planned_driving_distance = np.nanmax(
+                self.planned_driving_distances
+            )
+            self.min_planned_driving_distance = np.nanmin(
+                self.planned_driving_distances
+            )
 
         elif planned:
             pass  # Just for precaution
@@ -490,12 +482,6 @@ class Route:
                 )
             )
 
-            # Calculate remaining attributes
-            self.total_actual_driving_distance = np.sum(self.actual_driving_distances)
-            self.avg_actual_driving_distance = np.mean(self.actual_driving_distances)
-            self.max_actual_driving_distance = np.max(self.actual_driving_distances)
-            self.min_actual_driving_distance = np.min(self.actual_driving_distances)
-
         elif actual:
             pass  # Just for precaution
             self.__calculate_driving_distances(
@@ -506,9 +492,23 @@ class Route:
             )
             self.total_actual_driving_distance = sum(self.actual_driving_distances)
 
-    def evaluate_circuity_factor(
-        self, planned: bool = True, actual: bool = True
-    ) -> None:
+    @property
+    def total_actual_driving_distance(self):
+        return np.nansum(self.actual_driving_distances)
+
+    @property
+    def avg_actual_driving_distance(self):
+        return np.nanmean(self.actual_driving_distances)
+
+    @property
+    def max_actual_driving_distance(self):
+        return np.nanmax(self.actual_driving_distances)
+
+    @property
+    def min_actual_driving_distance(self):
+        return np.nanmin(self.actual_driving_distances)
+
+    def evaluate_circuity_factor(self, planned: bool = True) -> None:
         """Evaluate the circuity factor of the route. It is defined as the ratio
         between the driving distance and the euclidean distance. Booleans
         arguments allow to evaluate the circuity factor of the planned and/or
@@ -527,103 +527,126 @@ class Route:
                 ]
             )
             # Calculate remaining attributes
-            self.max_planned_circuity_factor = np.max(self.planned_circuity_factors)
-            self.min_planned_circuity_factor = np.min(self.planned_circuity_factors)
+            self.max_planned_circuity_factor = np.nanmax(self.planned_circuity_factors)
+            self.min_planned_circuity_factor = np.nanmin(self.planned_circuity_factors)
             self.total_planned_circuity_factor = (
                 self.total_planned_driving_distance
                 / self.total_planned_euclidean_distance
             )
-            self.avg_planned_circuity_factor = np.mean(self.planned_circuity_factors)
-            self.med_planned_circuity_factor = np.median(self.planned_circuity_factors)
+            self.avg_planned_circuity_factor = np.nanmean(self.planned_circuity_factors)
+            self.med_planned_circuity_factor = np.nanmedian(
+                self.planned_circuity_factors
+            )
 
-        if actual:
-            # Calculate the circuity factor of the actual sequence avoiding the
-            # division by zero
-            self.actual_circuity_factors = np.array(
-                [
-                    x / y if y != 0 else 1
-                    for x, y in zip(
-                        self.actual_driving_distances, self.actual_euclidean_distances
-                    )
-                ]
-            )
-            # Calculate remaining attributes
-            self.mean_actual_circuity_factor = np.mean(self.actual_circuity_factors)
-            self.max_actual_circuity_factor = np.max(self.actual_circuity_factors)
-            self.min_actual_circuity_factor = np.min(self.actual_circuity_factors)
-            self.total_actual_circuity_factor = (
-                self.total_actual_driving_distance
-                / self.total_actual_euclidean_distance
-            )
-            self.avg_circuity_factor_actual = np.mean(
-                self.actual_circuity_factors,
-            )
-            self.med_actual_circuity_factor = np.median(self.actual_circuity_factors)
+    @property
+    def actual_circuity_factors(self):
+        return np.array(
+            [
+                x / y if y != 0 else 1
+                for x, y in zip(
+                    self.actual_driving_distances, self.actual_euclidean_distances
+                )
+            ]
+        )
+
+    @property
+    def mean_actual_circuity_factor(self):
+        return np.nanmean(self.actual_circuity_factors)
+
+    @property
+    def max_actual_circuity_factor(self):
+        return np.nanmax(self.actual_circuity_factors)
+
+    @property
+    def min_actual_circuity_factor(self):
+        return np.nanmin(self.actual_circuity_factors)
+
+    @property
+    def total_actual_circuity_factor(self):
+        return self.total_actual_driving_distance / self.total_actual_euclidean_distance
+
+    @property
+    def avg_circuity_factor_actual(self):
+        return np.nanmean(self.actual_circuity_factors)
+
+    @property
+    def med_actual_circuity_factor(self):
+        return np.nanmedian(self.actual_circuity_factors)
 
     # Analyzing routes shape and area
 
-    def find_bbox(self, verbose=False) -> None:
+    def find_bbox(
+        self, planned: bool = False, actual: bool = True, verbose: bool = False
+    ) -> None:
         """Find the bounding box of the route. It is defined as the minimum
         rectangle that contains all the stops of the route."""
 
         # Find the bounding box of the route
 
-        try:
-            self.planned_bbox = [
-                min([x.location[0] for x in self.planned_sequence]),
-                min([x.location[1] for x in self.planned_sequence]),
-                max([x.location[0] for x in self.planned_sequence]),
-                max([x.location[1] for x in self.planned_sequence]),
-            ]
-            # Calculate the area considering the earth an sphere
-            # 6371 is the radius of the earth in km, area in km^2
-            self.planned_bbox_area = (
-                4
-                * np.pi
-                * 6371**2
-                * abs(
-                    np.sin(np.radians(self.planned_bbox[2]))
-                    - np.sin(np.radians(self.planned_bbox[0]))
+        if planned:
+            try:
+                self.planned_bbox = [
+                    min([x.location[0] for x in self.planned_sequence]),
+                    min([x.location[1] for x in self.planned_sequence]),
+                    max([x.location[0] for x in self.planned_sequence]),
+                    max([x.location[1] for x in self.planned_sequence]),
+                ]
+                # Calculate the area considering the earth an sphere
+                # 6371 is the radius of the earth in km, area in km^2
+                self.planned_bbox_area = (
+                    4
+                    * np.pi
+                    * 6371**2
+                    * abs(
+                        np.sin(np.radians(self.planned_bbox[2]))
+                        - np.sin(np.radians(self.planned_bbox[0]))
+                    )
+                    * abs(
+                        np.radians(self.planned_bbox[3])
+                        - np.radians(self.planned_bbox[1])
+                    )
+                    / (2 * np.pi)
                 )
-                * abs(
-                    np.radians(self.planned_bbox[3]) - np.radians(self.planned_bbox[1])
+                print("Awesome! I found the bounding box of the planned route!")
+            except AttributeError:
+                warnings.warn(
+                    "Could not find the bounding box of the planned sequence."
                 )
-                / (2 * np.pi)
-            )
-            print("Awesome! I found the bounding box of the planned route!")
-        except AttributeError:
-            warnings.warn("Could not find the bounding box of the planned sequence.")
-            self.planned_bbox = None
+                self.planned_bbox = None
 
-        try:
-            self.actual_bbox = [
-                min(x.location[0] for x in self.actual_sequence),  # min lat
-                min(x.location[1] for x in self.actual_sequence),  # min lon
-                max(x.location[0] for x in self.actual_sequence),  # max lat
-                max(x.location[1] for x in self.actual_sequence),  # max lon
-            ]
-            # Calculate the area considering the earth a sphere
-            self.actual_bbox_area = (
-                4
-                * np.pi
-                * 6371**2
-                * abs(
-                    np.sin(np.radians(self.actual_bbox[2]))
-                    - np.sin(np.radians(self.actual_bbox[0]))
-                )
-                * abs(np.radians(self.actual_bbox[3]) - np.radians(self.actual_bbox[1]))
-                / (2 * np.pi)
-            )  # 6371 is the radius of the earth in km, area in km^2
+        if actual:
+            try:
+                self.actual_bbox = [
+                    min(x.location[0] for x in self.actual_sequence),  # min lat
+                    min(x.location[1] for x in self.actual_sequence),  # min lon
+                    max(x.location[0] for x in self.actual_sequence),  # max lat
+                    max(x.location[1] for x in self.actual_sequence),  # max lon
+                ]
+                # Calculate the area considering the earth a sphere
+                self.actual_bbox_area = (
+                    4
+                    * np.pi
+                    * 6371**2
+                    * abs(
+                        np.sin(np.radians(self.actual_bbox[2]))
+                        - np.sin(np.radians(self.actual_bbox[0]))
+                    )
+                    * abs(
+                        np.radians(self.actual_bbox[3])
+                        - np.radians(self.actual_bbox[1])
+                    )
+                    / (2 * np.pi)
+                )  # 6371 is the radius of the earth in km, area in km^2
 
-            self.actual_bbox_aspect_ratio = (
-                self.actual_bbox[2] - self.actual_bbox[0]
-            ) / (self.actual_bbox[3] - self.actual_bbox[1])
+                self.actual_bbox_aspect_ratio = (
+                    self.actual_bbox[2] - self.actual_bbox[0]
+                ) / (self.actual_bbox[3] - self.actual_bbox[1])
 
-            if verbose:
-                print("Awesome! I found the bounding box of the actual sequence.")
-        except AttributeError:
-            warnings.warn("Could not find the bounding box of the actual sequence.")
-            self.actual_bbox = None
+                if verbose:
+                    print("Awesome! I found the bounding box of the actual sequence.")
+            except AttributeError:
+                warnings.warn("Could not find the bounding box of the actual sequence.")
+                self.actual_bbox = None
 
     @staticmethod  # TODO: Test!
     def minimum_rotated_rectangle(coords: np.array):
@@ -660,13 +683,11 @@ class Route:
         height = min_rect[1].distance(min_rect[2])
 
         # Define a rectangle with the center, angle, width and height
-        min_rect = shapely.affinity.rotate(
+        return shapely.affinity.rotate(
             shapely.geometry.box(-width / 2, -height / 2, width / 2, height / 2),
             angle,
             origin="centroid",
         )
-
-        return min_rect
 
     # TODO: Test!
     # TODO: calculate max and min edge length
@@ -676,9 +697,6 @@ class Route:
         """Find the minimum rotated rectangle of the route. It is defined as the
         minimum rectangle that contains all the stops of the route.
         """
-
-        # Find the minimum rotated rectangle of the route
-
         try:
             self.planned_mrr = self.minimum_rotated_rectangle(
                 [x.location for x in self.planned_sequence]
@@ -702,8 +720,6 @@ class Route:
         except AttributeError:
             warnings.warn("Could not find the minimum rotated rectangle of the actual.")
             self.actual_mrr = None
-
-        return None
 
     def create_convex_hull_polygon(self) -> None:
         """Create a polygon that represents the convex hull of the route."""
@@ -759,8 +775,8 @@ class Route:
 
             # TODO: Really actual sequence?
             self.actual_sequence_centroid_mean = (
-                np.mean(coords[:, 0]),
-                np.mean(coords[:, 1]),
+                np.nanmean(coords[:, 0]),
+                np.nanmean(coords[:, 1]),
             )
 
             self.actual_sequence_centroid_std = (

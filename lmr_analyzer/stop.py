@@ -37,8 +37,6 @@ class Stop:
         self.time_window = time_window
         self.packages = packages
 
-    def __post_init__(self):
-
         # Check if time window is valid
         if self.time_window[0] > self.time_window[1]:
             raise ValueError(
@@ -62,7 +60,9 @@ class Stop:
             raise TypeError("Invalid packages type: must be a list or a dictionary.")
 
         # The self.status_list will be used by the properties
-        self.status_list = [package.status for package in self.packages_list]
+        self.status_list: list[PackageStatus] = [
+            package.status for package in self.packages_list
+        ]
 
     @property
     def delivery_time(self):
