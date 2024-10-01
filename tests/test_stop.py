@@ -1,45 +1,6 @@
 from datetime import datetime
 
-import pytest
-
-from lmr_analyzer import package, stop
-
-
-@pytest.fixture
-def example_stop():
-    """Creates a simple stop object for testing purposes.
-
-    Returns
-    -------
-    stop
-        Example stop object.
-    """
-    # Create example packages
-    package_1 = package(
-        name="package_1",
-        dimensions=(1, 1, 1),
-        status="delivered",
-        weight=0.5,
-        price=10,
-    )
-    package_2 = package(
-        name="package_2",
-        dimensions=(1, 1, 1),
-        status="delivered",
-        weight=0.5,
-        price=10,
-    )
-
-    example_stop = stop(
-        name="example_stop",
-        location=(0, 0),
-        location_type="delivery",
-        time_window=(datetime(2022, 11, 20, 10), datetime(2022, 11, 20, 12)),
-        planned_service_time=60,
-        packages=[package_1, package_2],
-    )
-
-    return example_stop
+from lmr_analyzer.stop import Stop
 
 
 def test_stop_object(example_stop):
@@ -51,7 +12,7 @@ def test_stop_object(example_stop):
         Example stop object.
     """
     # Check if the object is a stop
-    assert isinstance(example_stop, stop)
+    assert isinstance(example_stop, Stop)
 
     # Check if the object attributes are correct
     assert example_stop.name == "example_stop"
