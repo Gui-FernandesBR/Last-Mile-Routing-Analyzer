@@ -1,13 +1,15 @@
 # %%
 # import libraries
-import osmnx as ox
-import networkx as nx
-import pandas as pd
-from lmr_analyzer import Haversine
 import json
 
 # start timer for the loop
 import time
+
+import networkx as nx
+import osmnx as ox
+import pandas as pd
+
+from lmr_analyzer import Haversine
 
 # %%
 # define the filename
