@@ -1,15 +1,15 @@
+"""
+This file is used to fetch the distance between the points using the OSM API.
+It was used to create the drive distances that are available in the
+data/driving_distances folder of the LMR repository
+"""
+
 import csv
 import time
 
 import requests
 
-# This file is used to fetch the distance between the points using the OSM API
-# It was used to create the drive distances that are available in the
-# data/driving_distances folder of the LMR repository
-
-
-# Initialize a new session
-session = requests.Session()
+SESSION = requests.Session()
 
 
 # Get the data from the API
@@ -22,15 +22,19 @@ def drive_distance_osm(origin, destination, i, n):
     origin : tuple
         The origin point coordinates. The coordinates must be in the form (lat, lon).
     destination : tuple
-        The destination point coordinates. The coordinates must be in the form (lat, lon).
+        The destination point coordinates. The coordinates must be in the form of
+        (lat, lon).
     session : requests.Session
-        The session to be used to make the request. If None, a new session will be created. This can be used to reuse the same session for multiple requests, which can impact performance.
+        The session to be used to make the request. If None, a new session will
+        be created. This can be used to reuse the same session for multiple
+        requests, which can impact performance.
 
     Returns
     -------
     (distance, duration) : tuple
-        The distance and duration of the shortest path between the origin and destination points.
-        The distance is in meters and the duration is in minutes.
+        The distance and duration of the shortest path between the origin and
+        destination points. The distance is in meters and the duration is in
+        minutes.
     """
 
     start = time.time()
@@ -42,7 +46,7 @@ def drive_distance_osm(origin, destination, i, n):
 
     # Get the driving distance from the OpenStreetMaps API
     url = f"http://router.project-osrm.org/route/v1/driving/{coordinates}"
-    res = session.get(url).json()
+    res = SESSION.get(url).json()
 
     # Check if the route was properly found, raise an error if not
     if res["code"] != "Ok":
@@ -81,20 +85,14 @@ def read_coord_file(filename):
 
 
 # Calculate the distance and duration between the points
-def calculate_distance_duration(data, n):
+def calculate_distance_duration(data: dict, n: int,) -> dict:
     """_summary_
 
     Parameters
     ----------
     data : _type_
         _description_
-    n : int
-        Number of lines to be processed
-
-    Returns
-    -------
-    _type_
-        _description_
+    n : Number of lines to be processed
     """
     route = data[1][0]
     route_begin_index = 1

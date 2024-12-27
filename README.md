@@ -55,7 +55,7 @@ The tool was developed in Python and it is able to analyze the last mile routing
 
 ## Installation
 
-First you need to certify that you have [Python 3.9](https://www.python.org/downloads/release/python-380/) installed.
+First you need to certify that you have [Python 3.10](https://www.python.org/downloads/release/python-380/) (or higher) installed.
 
 Then you can install the package using pip:
 
@@ -64,7 +64,7 @@ pip install git+https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer/lm
 
 ```
 
-The package will automatically install the dependencies listed at [requirements.txt]() file.
+The package will automatically install the dependencies listed at the [requirements.txt]() file.
 
 ## Getting started with examples
 
@@ -97,7 +97,7 @@ The repository is organized as follows:
   requirements-dev.txt - Python packages required to develop the package
   requirements.txt     - Python packages required to run the package
   setup.py             - Setup file
-```	
+```
 
 
 ## Library Structure
@@ -122,7 +122,7 @@ The architecture of the package is represented by the following diagram:
 classDiagram
     class lmr_analyzer {
     }
-    class amzSerializer {
+    class AmazonSerializer {
     }
     class analysis {
     }
@@ -140,7 +140,7 @@ classDiagram
     }
     class vehicle {
     }
-    lmr_analyzer --> amzSerializer
+    lmr_analyzer --> AmazonSerializer
     lmr_analyzer --> analysis
     lmr_analyzer --> distanceMatrix
     lmr_analyzer --> geometry
@@ -149,10 +149,10 @@ classDiagram
     lmr_analyzer --> stop
     lmr_analyzer --> utils
     lmr_analyzer --> vehicle
-    amzSerializer --> package
-    amzSerializer --> route
-    amzSerializer --> stop
-    amzSerializer --> vehicle
+    AmazonSerializer --> package
+    AmazonSerializer --> route
+    AmazonSerializer --> stop
+    AmazonSerializer --> vehicle
     route --> stop
     route --> utils
     stop --> package
@@ -165,14 +165,14 @@ Due to the large amount of information, the data folder can be a bit confusing, 
 
 ```bash
 data/
-├── driving_distances/       - Driving distances to be used with Amazon dataset 
+├── driving_distances/       - Driving distances to be used with Amazon dataset
 │   ├── austin.csv
 │   ├── boston.csv
 │   ├── ...
 │   └── seattle.csv
 ├── results/                 - Results from the examples
 │   ├── dataframes/          - all .csv or .txt files
-│   ├── graph_shapefile/     - gespatial data files
+│   ├── graph_shapefile/     - geospatial data files
 │   ├── graphs/              - Report of the Graphs generated with the examples
 │   ├── pickles/             - Objects saved as pickle files
 │   └── polar_plots/         - Polar plots generated with the examples
@@ -215,7 +215,7 @@ If you use this package in your research, please cite it as:
   doi = {10.5281/zenodo.6792976}
 }
 
-```	
+```
 
 ## Contact
 
