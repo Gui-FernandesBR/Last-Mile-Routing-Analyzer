@@ -166,9 +166,10 @@ class Geometry:
                     )
                 )
                 output.update(
-                    f"Graph for '{key}' created! Completed: {len(self.graphs)} of {self.number_of_polygons}",
+                    f"Graph for '{key}' created! "
+                    f"Completed: {len(self.graphs)} of {self.number_of_polygons}",
                 )
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 print(f"Error with {key}.")
                 print(e)
                 self.graphs[key] = None
@@ -203,41 +204,24 @@ class Geometry:
 
     def evaluate_basic_stats(self):
         self.stats_dict = {}
-        initial_cpu_time = process_time()
-        # output = display("Starting", display_id=True)
 
         for key, value in self.graphs.items():
             try:
                 self.stats_dict[key] = ox.stats.basic_stats(
                     value, area=None, clean_int_tol=None
                 )
-                # output.update(
-                #     f"Basic statistics for '{key}' calculated! Completed: {len(self.stats_dict)} of {self.number_of_polygons}",
-                # )
-            except Exception as e:
+
+            except Exception as e:  # pylint: disable=broad-except
                 print(f"Error with {key}.")
                 print(e)
                 self.stats_dict[key] = None
         # TODO: Discover how to get the area of the graph
-
-        # output.update(
-        #     "Completed {} basic stats calculation using a total CPU time of: {:.1f} s".format(
-        #         len(self.stats_dict),
-        #         process_time() - initial_cpu_time,
-        #     )
-        # )
 
         # Calculate the number of graphs created that are not None
         self.number_of_stats = len([graph for graph in self.graphs.values() if graph])
         self.basic_stats_quality_percentage = (
             100 * self.number_of_stats / self.number_of_polygons
         )
-        # print(
-        #     f"It was possible to create a graph for {self.number_of_stats} of {self.number_of_polygons} polygons."
-        # )
-        # print(
-        #     f"Basic stats quality: {self.basic_stats_quality_percentage:.0f} %"
-        # )
 
     def create_attribute_table(self) -> None:
         """Create a pandas data frame with the basic stats of each graph."""
@@ -255,22 +239,17 @@ class Geometry:
         names_list = [" ".join(x.split(" ", 2)[:2]) for x in list(self.graphs.keys())]
         self.attribute_table["name"] = names_list
 
-    def evaluate_street_orientation(self) -> None:
+    def evaluate_street_orientation(self) -> None:  # pylint: disable=too-many-locals
         """Evaluate the street orientation of each graph."""
         street_orientation_dict = {}
 
         # Add edge bearings to graph
-        # Add time to process
-        initial_cpu_time = process_time()
-        # output = display("Starting", display_id=True)
+
         for key, graph in self.graphs.items():
-            # Update the display
-            # output.update(
-            #     f"Street orientation for '{key}' calculated! Completed: {len(street_orientation_dict)} of {self.number_of_polygons}",
-            # )
+
             try:
                 graph = ox.add_edge_bearings(graph)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 print(f"Error with {key}.")
                 print(e)
                 street_orientation_dict[key] = None
@@ -306,11 +285,8 @@ class Geometry:
             # Calculate the kurtosis of the bearings counts
             kurt = np.sum(counts * (bin_cos - mean) ** 4) / np.sum(counts) / std**4
 
-            # Count the total number of edges
-            total = counts.sum()
-
             # The number if it was an uniform distribution
-            uniform = total / len(bins) * np.ones(len(bins) - 1)
+            uniform = counts.sum() / len(bins) * np.ones(len(bins) - 1)
 
             # Calculate the absolute deviation from the uniform distribution
             deviation = np.abs(counts - uniform) / uniform
@@ -350,13 +326,6 @@ class Geometry:
                 "skew": skew,
                 "kurt": kurt,
             }
-
-        # output.update(
-        #     "Completed {} street orientation calculation using a total CPU time of: {:.1f} s".format(
-        #         len(street_orientation_dict),
-        #         process_time() - initial_cpu_time,
-        #     )
-        # )
 
         self.street_orientation_dict = street_orientation_dict
 
@@ -407,16 +376,11 @@ class Geometry:
                     )
                     ax.set_title(key)
                     if savefig:
-                        try:
-                            fig.savefig(f"graph_{key}.pdf", dpi=dpi)
-                            # print(f"Graph '{key}' saved!")
-                        except Exception as e:
-                            print(f"Graph '{key}' could not be saved!" + str(e))
+                        fig.savefig(f"graph_{key}.pdf", dpi=dpi)
                     else:
                         plt.show()
                     plt.close()
 
-            # plt.close("all")
             return None
 
         # Find the number of rows and columns
@@ -473,6 +437,7 @@ class Geometry:
         else:
             plt.show()
         plt.close()
+        return None
 
     def plot_street_orientation_linear(
         self,
@@ -517,13 +482,12 @@ class Geometry:
             raise NotImplementedError("The grid option is not implemented yet.")
 
         # First, let's sort the dictionary by the quadratic_sum_deviation
-        sorted_dict = {
-            k: v
-            for k, v in sorted(
+        sorted_dict = dict(
+            sorted(
                 self.street_orientation_dict.items(),
                 key=lambda item: item[1]["quadratic_sum_deviation"],
             )
-        }
+        )
 
         counter = 0
         for key, value in sorted_dict.items():
@@ -553,12 +517,12 @@ class Geometry:
                 verticalalignment="center",
                 color="White",
                 # Add a background to the text
-                bbox=dict(
-                    facecolor="black",
-                    alpha=0.7,
-                    boxstyle="round,pad=0.5",
-                    edgecolor="none",
-                ),
+                bbox={
+                    "facecolor": "black",
+                    "alpha": 0.7,
+                    "boxstyle": "round,pad=0.5",
+                    "edgecolor": "none",
+                },
             )
 
             if savefig:

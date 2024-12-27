@@ -11,7 +11,9 @@ class DistanceMatrix:
     recommended to save the matrices to a file and load them when needed.
     """
 
-    def __init__(self, matrix=None, origins=None, destinations=None, sequence=None):
+    def __init__(
+        self, matrix=None, origins=None, destinations=None, sequence=None
+    ) -> None:
         """Initializes the distance matrix class.
 
         Parameters
@@ -77,9 +79,6 @@ class DistanceMatrix:
                 ...
             }
 
-        Returns
-        -------
-        None
         """
         # Save the parameters as attributes
         self.matrix, self.origins, self.destinations, self.sequences = (
@@ -101,11 +100,6 @@ class DistanceMatrix:
         if self.matrix is not None:
             # A matrix was passed, let's evaluate and return
             self.calculate_matrix_statistics()
-            self.origins_names = list(self.matrix.keys())
-            self.destinations_names = list(self.matrix[self.origins_names[0]].keys())
-
-    # def __getitem__(self, key):
-    #     return self.matrix[key]
 
     def load_support_matrix_file(self, filename: str) -> None:
         """Loads a support matrix file. A support matrix file is a file containing
@@ -131,7 +125,7 @@ class DistanceMatrix:
                 matrix = list(reader)
         except FileNotFoundError as e:
             raise FileNotFoundError(
-                "The file was not found. Please check the path."
+                "The file was not found. Please check the path and try again."
             ) from e
 
         n_rows = len(matrix)
@@ -173,26 +167,26 @@ class DistanceMatrix:
         self.destinations = {}
 
         # TODO: The next loops can be optimized
-        for route in self.routes_matrix.keys():
-            break  # just for now
-            # for origin in self.routes_matrix[route].keys():
-            #     self.origins[origin] = {
-            #         "name": origin,
-            #         "latitude": self.routes_matrix[route][origin]["latitude"],
-            #         "longitude": self.routes_matrix[route][origin]["longitude"],
-            #     }
-            #     self.matrix[f"{origin}-{route}"] = {}
-            #     for destination in self.routes_matrix[route].keys():
-            #         self.destinations[destination] = {
-            #             "name": destination,
-            #             "latitude": self.routes_matrix[route][destination]["latitude"],
-            #             "longitude": self.routes_matrix[route][destination][
-            #                 "longitude"
-            #             ],
-            #         }
-            #         self.matrix[f"{origin}-{route}"][destination] = self.routes_matrix[
-            #             route
-            #         ][destination]["distance_to_next(km)"]
+        # for route in self.routes_matrix.keys():
+        #     break
+        # for origin in self.routes_matrix[route].keys():
+        #     self.origins[origin] = {
+        #         "name": origin,
+        #         "latitude": self.routes_matrix[route][origin]["latitude"],
+        #         "longitude": self.routes_matrix[route][origin]["longitude"],
+        #     }
+        #     self.matrix[f"{origin}-{route}"] = {}
+        #     for destination in self.routes_matrix[route].keys():
+        #         self.destinations[destination] = {
+        #             "name": destination,
+        #             "latitude": self.routes_matrix[route][destination]["latitude"],
+        #             "longitude": self.routes_matrix[route][destination][
+        #                 "longitude"
+        #             ],
+        #         }
+        #         self.matrix[f"{origin}-{route}"][destination] = self.routes_matrix[
+        #             route
+        #         ][destination]["distance_to_next(km)"]
 
         print("Awesome, the distance matrix was loaded successfully!")
         print("The routes matrix was also loaded and saved as an attribute.\n")
@@ -210,6 +204,20 @@ class DistanceMatrix:
         self.n_origins = len(self.origins)
         self.n_destinations = len(self.destinations)
         self.n_distances = len(distances)
+
+    @property
+    def origins_names(self):
+        try:
+            return list(self.matrix.keys())
+        except AttributeError:
+            return None
+
+    @property
+    def destinations_names(self):
+        try:
+            return list(self.matrix[self.origins_names[0]].keys())
+        except AttributeError:
+            return None
 
     def print_info(self) -> None:
         """Prints the information of the distance matrix."""

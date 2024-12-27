@@ -1,15 +1,4 @@
-import enum
-
-
-class PackageStatus(enum.Enum):
-    TO_BE_DELIVERED = "to-be-delivered"
-    REJECTED = "rejected"
-    ATTEMPTED = "attempted"
-    DELIVERED = "delivered"
-
-    @staticmethod
-    def get_members():
-        return [member.value for member in PackageStatus.__members__.values()]
+from lmr_analyzer.enums import PackageStatus
 
 
 class Package:

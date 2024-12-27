@@ -1,18 +1,8 @@
-import enum
 from datetime import datetime
 from typing import Tuple
 
-from .package import Package, PackageStatus
-
-
-class LocationType(enum.Enum):
-    DEPOT = "depot"
-    PICKUP = "pickup"
-    DELIVERY = "delivery"
-
-    @staticmethod
-    def get_members():
-        return [member.value for member in LocationType.__members__.values()]
+from lmr_analyzer.enums import LocationType
+from lmr_analyzer.package import Package, PackageStatus
 
 
 class Stop:
@@ -37,19 +27,26 @@ class Stop:
         self.time_window = time_window
         self.packages = packages
 
-        # Check if time window is valid
+        self.__validate_time_window()
+        self.__validate_location_type()
+
+        self.__initialize_packages_list()
+        self.__initialize_status_list()
+
+    def __validate_time_window(self):
         if self.time_window[0] > self.time_window[1]:
             raise ValueError(
                 "Invalid time window: start time is greater than end time."
             )
-        # Check if location type is valid
+
+    def __validate_location_type(self):
         if self.location_type not in ["depot", "pickup", "delivery"]:
             raise ValueError(
                 "Invalid stop location type: must be one of the following: "
                 "'depot', 'pickup', 'delivery'."
             )
 
-        # Create packages list
+    def __initialize_packages_list(self):
         if isinstance(self.packages, dict):
             self.packages_list = list(self.packages.values())
         elif isinstance(self.packages, list) and all(
@@ -59,7 +56,7 @@ class Stop:
         else:
             raise TypeError("Invalid packages type: must be a list or a dictionary.")
 
-        # The self.status_list will be used by the properties
+    def __initialize_status_list(self):
         self.status_list: list[PackageStatus] = [
             package.status for package in self.packages_list
         ]

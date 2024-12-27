@@ -7,36 +7,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytz
 
-from .package import Package
-from .route import Route
-from .stop import Stop
-from .vehicle import Vehicle
-
-
-class BoundingBox:
-    """Auxiliary class to store bounding box information."""
-
-    def __init__(self, name: str, lat1: float, lat2: float, lon1: float, lon2: float):
-        """Constructor for the bbox class
-
-        Parameters
-        ----------
-        name : str
-            The name of the bounding box
-        lat1 : float
-            The minimum latitude of the bounding box
-        lon1 : float
-            The minimum longitude of the bounding box
-        lat2 : float
-            The maximum latitude of the bounding box
-        lon2 : float
-            The maximum longitude of the bounding box
-        """
-        self.name = name
-        self.lat_min = min(lat1, lat2)
-        self.lon_min = min(lon1, lon2)
-        self.lat_max = max(lat1, lat2)
-        self.lon_max = max(lon1, lon2)
+from lmr_analyzer.bbox import BoundingBox
+from lmr_analyzer.package import Package
+from lmr_analyzer.route import Route
+from lmr_analyzer.stop import Stop
+from lmr_analyzer.vehicle import Vehicle
 
 
 class AmazonSerializer:
@@ -50,70 +25,6 @@ class AmazonSerializer:
         # TODO: Check contents on the directory before loading the data
 
         self.serialize_all(root_directory)
-
-    @staticmethod
-    def serialize_packages(packages_dict):
-        """Serializes a package object into a dictionary. The dictionary can be
-        used to create a new package object for each package present in the
-        packages_dict.
-
-        Parameters
-        ----------
-        packages_dict : dict
-            A dictionary containing the packages to be serialized. The dictionary
-            must be in the form ...
-
-        Returns
-        -------
-        dict
-            A dictionary containing the serialized packages. The dictionary is
-            in the form ...
-        """
-
-        for route_id in packages_dict:
-            for stop_id in packages_dict[route_id]:
-                # Iterate through the packages in the current stop
-                for package_id, values in packages_dict[route_id][stop_id].items():
-                    if isinstance(values, Package):
-                        continue
-
-                    else:
-                        if values["scan_status"] == "DELIVERED":
-                            status = "delivered"
-                        elif values["scan_status"] == "REJECTED":
-                            status = "rejected"
-                        elif values["scan_status"] == "DELIVERY_ATTEMPTED":
-                            status = "attempted"
-                        else:
-                            raise ValueError(
-                                f"Invalid package status. Please check {values['scan_status']}"
-                            )
-
-                        # Create one package object
-                        pck = Package(
-                            name=package_id,
-                            dimensions=(
-                                values["dimensions"]["depth_cm"],
-                                values["dimensions"]["height_cm"],
-                                values["dimensions"]["width_cm"],
-                            ),
-                            status=status,
-                            weight=0,
-                            price=0,
-                        )
-
-                        # Add the package to the package dictionary
-                        packages_dict[route_id][stop_id][package_id] = pck
-
-        # 'PackageID_'
-        # scan_status
-        # time_window[start_time_utc, end_time_utc]
-        # planned_service_time_seconds
-        # dimensions[depth_cm, height_cm, width_cm]
-
-        # TODO: Add remaining attributes to the package object
-
-        return packages_dict
 
     def serialize_routes(
         self, routes_dict: dict, packages_dict: dict, bbox_list: list = None
@@ -141,9 +52,64 @@ class AmazonSerializer:
             in the form ...
         """
 
-        # Initialize the bounding box list
+        self.__initialize_bbox_list(bbox_list)
+
+        for route_id, route in routes_dict.items():
+            if isinstance(routes_dict[route_id], Route):
+                continue
+
+            for stop_id in routes_dict[route_id]["stops"]:
+                if isinstance(routes_dict[route_id]["stops"][stop_id], Stop):
+                    continue
+
+                lc_type = routes_dict[route_id]["stops"][stop_id]["type"]
+                match lc_type:
+                    case "Dropoff":
+                        lc_type = "delivery"
+                    case "Station":
+                        lc_type = "depot"
+                    case _:
+                        raise ValueError(
+                            f"Invalid location type, please check {lc_type}"
+                        )
+
+                stop = Stop(
+                    name=stop_id,
+                    location=(
+                        routes_dict[route_id]["stops"][stop_id]["lat"],
+                        routes_dict[route_id]["stops"][stop_id]["lng"],
+                    ),
+                    location_type=lc_type,
+                    time_window=(0, 0),
+                    packages=packages_dict[route_id][stop_id],
+                )
+
+                routes_dict[route_id]["stops"][stop_id] = stop
+
+            vehicle = Vehicle(
+                name="vehicle" + str(route_id),
+                capacity=routes_dict[route_id]["executor_capacity_cm3"],
+            )
+
+            date = [int(x) for x in routes_dict[route_id]["date_YYYY_MM_DD"].split("-")]
+            hour = [
+                int(x) for x in routes_dict[route_id]["departure_time_utc"].split(":")
+            ]
+            route = Route(
+                name=route_id,
+                stops=routes_dict[route_id]["stops"],
+                departure_time=datetime(
+                    date[0], date[1], date[2], hour[0], hour[1], hour[2], 0, pytz.UTC
+                ),
+                vehicle=vehicle,
+            )
+
+            routes_dict[route_id] = route
+
+        return self.__separate_routes_by_bbox(routes_dict, self.bbox_list)
+
+    def __initialize_bbox_list(self, bbox_list):
         if not bbox_list:
-            # Define all the five standard bounding box
             los_angeles = BoundingBox(
                 name="Los Angeles",
                 lat1=36,
@@ -160,7 +126,13 @@ class AmazonSerializer:
                 lon2=-120,
             )
 
-            chicago = BoundingBox(name="Chicago", lat1=41, lat2=43, lon1=-90, lon2=-86)
+            chicago = BoundingBox(
+                name="Chicago",
+                lat1=41,
+                lat2=43,
+                lon1=-90,
+                lon2=-86,
+            )
 
             boston = BoundingBox(
                 name="Boston",
@@ -182,57 +154,6 @@ class AmazonSerializer:
             self.bbox_list = [los_angeles, seattle, chicago, boston, austin]
         else:
             self.bbox_list = bbox_list
-
-        for route_id, route in routes_dict.items():
-            if isinstance(routes_dict[route_id], Route):
-                continue
-
-            for stop_id in routes_dict[route_id]["stops"]:
-                if isinstance(routes_dict[route_id]["stops"][stop_id], Stop):
-                    continue
-
-                lc_type = routes_dict[route_id]["stops"][stop_id]["type"]
-                if lc_type == "Dropoff":
-                    lc_type = "delivery"
-                elif lc_type == "Station":
-                    lc_type = "depot"
-                else:
-                    raise ValueError(f"Invalid location type, please check {lc_type}")
-
-                stop = Stop(
-                    name=stop_id,
-                    location=(
-                        routes_dict[route_id]["stops"][stop_id]["lat"],
-                        routes_dict[route_id]["stops"][stop_id]["lng"],
-                    ),
-                    location_type=lc_type,
-                    time_window=(0, 0),
-                    packages=packages_dict[route_id][stop_id],
-                )
-
-                routes_dict[route_id]["stops"][stop_id] = stop
-
-            vehicle = Vehicle(
-                name="random_vehicle",
-                capacity=routes_dict[route_id]["executor_capacity_cm3"],
-            )
-
-            date = [int(x) for x in routes_dict[route_id]["date_YYYY_MM_DD"].split("-")]
-            hour = [
-                int(x) for x in routes_dict[route_id]["departure_time_utc"].split(":")
-            ]
-            route = Route(
-                name=route_id,
-                stops=routes_dict[route_id]["stops"],
-                departure_time=datetime(
-                    date[0], date[1], date[2], hour[0], hour[1], hour[2], 0, pytz.UTC
-                ),
-                vehicle=vehicle,
-            )
-
-            routes_dict[route_id] = route
-
-        return self.__separate_routes_by_bbox(routes_dict, self.bbox_list)
 
     def __separate_routes_by_bbox(
         self, routes_dict, bbox_list
@@ -280,14 +201,13 @@ class AmazonSerializer:
                 ):
                     # Add the route to the new dictionary
                     new_routes_dict[bbox.name][route_id] = route
-                    # Break the loop
                     break
 
         # Return the new dictionary
         # TODO: Understand why I am loosing 12 routes after this step
         return new_routes_dict
 
-    def serialize_actual_sequences(self, actual_sequences):
+    def serialize_actual_sequences(self, actual_sequences) -> dict:
         """Serializes the actual sequences into a dictionary. The dictionary
         can be used to create a new route object for each route present in the
         actual_sequences.
@@ -308,9 +228,7 @@ class AmazonSerializer:
             if isinstance(route_dict, list):
                 continue
             for _, ac_dict in route_dict.items():
-                sorted_ac_dict = {
-                    k: v for k, v in sorted(ac_dict.items(), key=lambda item: item[1])
-                }
+                sorted_ac_dict = dict(sorted(ac_dict.items(), key=lambda item: item[1]))
                 sequence_names = list(sorted_ac_dict.keys())
                 actual_sequences[route_id] = sequence_names
 
@@ -323,33 +241,27 @@ class AmazonSerializer:
         # Read the package data
         with open(f"{root_directory}/package_data.json", "r") as outfile:
             db_package = json.load(outfile)
-        outfile.close()
-        packages_dict = db_package.copy()
 
         ## Serialize the package data
-        packages_dict = self.serialize_packages(packages_dict=packages_dict)
+        self.packages_dict = serialize_packages(packages_dict=db_package.copy())
 
         ## Calculate the total number of packages
-        total_packages = 0
-        for x in packages_dict.keys():
-            for y in packages_dict[x].keys():
-                total_packages += len(packages_dict[x][y])
+        self.total_packages = 0
+        for x in self.packages_dict.keys():
+            for y in self.packages_dict[x].keys():
+                self.total_packages += len(self.packages_dict[x][y])
 
         ## Store variables as attributes
-        self.packages_dict = packages_dict
-        self.total_packages = total_packages
         pck_time = time.time()
         print(f"package_data.json has been loaded in {pck_time - start:.2f} seconds.")
 
         # Read the route data
         with open(f"{root_directory}/route_data.json", "r") as outfile:
             db_route = json.load(outfile)
-        outfile.close()
-        routes_dict = db_route.copy()
 
         ## Serialize the route data
         self.routes_dict = self.serialize_routes(
-            routes_dict=routes_dict, packages_dict=packages_dict
+            routes_dict=db_route.copy(), packages_dict=self.packages_dict
         )
 
         ## Store variables as attributes
@@ -369,7 +281,7 @@ class AmazonSerializer:
             actual_sequences=ac_sequences_dict
         )
         ## Modify each route in the routes_dict to include the actual sequence
-        for route in routes_dict.values():
+        for route in self.routes_dict.values():
             route.set_actual_sequence(ac_sequences_dict[route.name])
         ac_sequence_time = time.time()
 
@@ -469,12 +381,8 @@ class AmazonSerializer:
         print(
             f"A total of {self.total_packages} packages were loaded from: package_data.json"
         )
-        print(
-            f"  (...it considers total of {np.sum([len(self.packages_dict[x]) for x in self.packages_dict.keys()])} deliveries)"
-        )
-        print(
-            f"    (...which represents a total of {len(self.packages_dict.keys())} routes"
-        )
+        print(f"  (...it considers total of {self.number_of_deliveries} deliveries)")
+        print(f"    (...which represents a total of {self.number_of_routes} routes")
 
         # Route Data
         print(
@@ -514,3 +422,80 @@ class AmazonSerializer:
                             "-",
                         ]
                     )
+
+    @property
+    def number_of_deliveries(self):
+        try:
+            return np.sum(
+                [len(self.packages_dict[x]) for x in self.packages_dict.keys()]
+            )
+        except AttributeError:
+            return None
+
+    @property
+    def number_of_routes(self):
+        try:
+            return len(self.packages_dict.keys())
+        except AttributeError:
+            return None
+
+
+def serialize_packages(packages_dict):
+    """Serializes a package object into a dictionary. The dictionary can be
+    used to create a new package object for each package present in the
+    packages_dict.
+
+    Parameters
+    ----------
+    packages_dict : dict
+        A dictionary containing the packages to be serialized. The dictionary
+        must be in the form ...
+
+    Returns
+    -------
+    dict
+        A dictionary containing the serialized packages. The dictionary is
+        in the form ...
+    """
+
+    for route_id in packages_dict:
+        for stop_id in packages_dict[route_id]:
+            # Iterate through the packages in the current stop
+            for package_id, values in packages_dict[route_id][stop_id].items():
+                if isinstance(values, Package):
+                    continue
+
+                match values["scan_status"]:
+                    case "DELIVERED":
+                        status = "delivered"
+                    case "REJECTED":
+                        status = "rejected"
+                    case "DELIVERY_ATTEMPTED":
+                        status = "attempted"
+                    case _:
+                        raise ValueError(
+                            "Invalid package status. "
+                            f"Please check {values['scan_status']}"
+                        )
+
+                pck = Package(
+                    name=package_id,
+                    dimensions=(
+                        values["dimensions"]["depth_cm"],
+                        values["dimensions"]["height_cm"],
+                        values["dimensions"]["width_cm"],
+                    ),
+                    status=status,
+                    weight=0,
+                    price=0,
+                )
+
+                # Add the package to the package dictionary
+                packages_dict[route_id][stop_id][package_id] = pck
+
+    # TODO: Add remaining attributes object:
+    # - PackageID_
+    # - planned_service_time_seconds
+    # - time_window[start_time_utc, end_time_utc]
+
+    return packages_dict

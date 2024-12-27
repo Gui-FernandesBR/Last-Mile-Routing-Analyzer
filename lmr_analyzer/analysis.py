@@ -3,6 +3,8 @@ from functools import cached_property
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from lmr_analyzer.enums import DistanceMode
+
 from .route import Route
 
 
@@ -26,11 +28,8 @@ class Analysis:
         self.total_start_time = self.total_end_time = self.routes[0].departure_time
 
         # Iterate over all routes to find the correct extremes
-        for route in self.routes:
-            if route.departure_time < self.total_start_time:
-                self.total_start_time = route.departure_time
-            if route.departure_time > self.total_end_time:
-                self.total_end_time = route.departure_time
+        self.total_start_time = min(route.departure_time for route in self.routes)
+        self.total_end_time = max(route.departure_time for route in self.routes)
 
         # Calculate the time period
         self.time_period = (self.total_start_time, self.total_end_time)
@@ -59,7 +58,7 @@ class Analysis:
         self,
         planned: bool = False,
         actual: bool = True,
-        mode="osm",
+        mode: DistanceMode = "osm",
         multiprocessing: bool = False,
         planned_distance_matrix=None,
         actual_distance_matrix=None,
@@ -163,8 +162,6 @@ class Analysis:
             "average_packages_per_stop": self.average_packages_per_stop,
         }
 
-    # Unique stops analysis (left apart from the analysis.py, because it was consuming too much time)
-
     # Centroid analysis
 
     def calculate_centroids(self) -> None:
@@ -246,8 +243,7 @@ class Analysis:
         )
         print(f"The time period length is: {self.time_period_length.days} days")
         print(f"The number of routes is: {len(self.routes)}")
-        print(f"The number of stops is: {len(self.unique_stops_dict)}")
-        print(f"The number of deliveries is: {self.number_of_deliveries}")
+        print(f"The number of packages is: {self.total_number_of_packages}")
 
     # Export methods
 

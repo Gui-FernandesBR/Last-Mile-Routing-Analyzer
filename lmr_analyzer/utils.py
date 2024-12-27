@@ -3,10 +3,14 @@ from math import asin, cos, radians, sin, sqrt
 from typing import Tuple
 
 import networkx as nx
+import numpy as np
 import osmnx as ox
 import requests
+import shapely
+from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
+from shapely.geometry import Point
 
-# Distances calculations
+from lmr_analyzer.enums import DistanceMode
 
 
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -28,11 +32,10 @@ def drive_distance_gmaps(
     origin: Tuple[float, float],  # lat, lon
     destination: Tuple[float, float],  # lat, lon
     gmaps_api_key: str,  # Google Maps API key
-) -> Tuple[float, float]:
+) -> Tuple[float, float]:  # (distance km, duration min)
     """Calculate the driving distance between two points using Google Maps API.
     Internet connection is required. The Google Maps API key must be passed.
     """
-    # TODO: Test gmaps API!
 
     # Create the coordinates string
     origin_coordinates = f"{origin[0]},{origin[1]}"
@@ -54,12 +57,11 @@ def drive_distance_gmaps(
     data = response.json()
 
     if data["status"] != "OK":
-        raise RuntimeError("Request failed")
+        raise RuntimeError("Request failed with message: " + data["status"])
 
     # Get the distance and duration
     distance_km = data["routes"][0]["legs"][0]["distance"]["value"] / 1000
     duration_min = data["routes"][0]["legs"][0]["duration"]["value"] / 60
-    # TODO: check if this is really in minutes
 
     return (distance_km, duration_min)
 
@@ -144,7 +146,7 @@ def drive_distance_osmnx(
         method="dijkstra",
     )
 
-    # Return the length of the shortest path, in km
+    # Return the length of the shortest path
     return route_length / 1000  # km
 
 
@@ -152,9 +154,9 @@ def drive_distance_osmnx(
 
 
 def get_distance(
-    location1: Tuple[float, float],
-    location2: Tuple[float, float],
-    mode="haversine",
+    location1: Tuple[float, float],  # lat, lon
+    location2: Tuple[float, float],  # lat, lon
+    mode: DistanceMode = "haversine",
     session: requests.Session = None,
 ):
     """Calculate the distance between two points. It supports five different
@@ -163,10 +165,6 @@ def get_distance(
 
     Parameters
     ----------
-    location1 : tuple
-        The coordinates of the first location. The coordinates must be in the form (lat, lon).
-    location2 : tuple
-        The coordinates of the second location. The coordinates must be in the form (lat, lon).
     mode : string
         Distance calculation mode. The mode must be one of the following:
         'haversine', 'gmaps', 'osmnx'.
@@ -194,7 +192,7 @@ def get_distance(
         case _:
             raise ValueError(
                 "Invalid mode, please choose one of the following: "
-                "haversine, gmaps, osm or osmnx"
+                "'haversine', 'gmaps', 'osm' or 'osmnx'"
             )
 
 
@@ -224,3 +222,45 @@ def get_city_state_names(
     state = res["address"]["state"]
 
     return (city, state)
+
+
+# TODO: Test!
+def minimum_rotated_rectangle(coords: np.array):
+    # Find the minimum rotated rectangle of a set of coordinates
+
+    # Find the convex hull of the coordinates
+    hull = ConvexHull(coords)
+    # Find the minimum rotated rectangle of the convex hull
+    min_rect = min(
+        (
+            (
+                Point(coords[hull.vertices[i]]).distance(
+                    Point(coords[hull.vertices[j]])
+                ),
+                Point(coords[hull.vertices[i]]),
+                Point(coords[hull.vertices[j]]),
+            )
+            for i in range(len(hull.vertices))
+            for j in range(i + 1, len(hull.vertices))
+        )
+    )
+    # Find the center of the minimum rotated rectangle
+    # center = Point(
+    #     (min_rect[1].x + min_rect[2].x) / 2, (min_rect[1].y + min_rect[2].y) / 2
+    # )
+    # Find the angle of the minimum rotated rectangle
+    angle = (
+        np.arctan2(min_rect[2].y - min_rect[1].y, min_rect[2].x - min_rect[1].x)
+        * 180
+        / np.pi
+    )
+    # Find the width and height of the minimum rotated rectangle
+    width = min_rect[0]
+    height = min_rect[1].distance(min_rect[2])
+
+    # Define a rectangle with the center, angle, width and height
+    return shapely.affinity.rotate(
+        shapely.geometry.box(-width / 2, -height / 2, width / 2, height / 2),
+        angle,
+        origin="centroid",
+    )

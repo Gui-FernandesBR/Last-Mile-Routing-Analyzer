@@ -6,13 +6,13 @@ from typing import Union
 
 import numpy as np
 import requests
-import shapely
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Polygon
 
-from .stop import Stop
-from .utils import get_distance
-from .vehicle import Vehicle
+from lmr_analyzer.enums import DistanceMode
+from lmr_analyzer.stop import Stop
+from lmr_analyzer.utils import get_distance
+from lmr_analyzer.vehicle import Vehicle
 
 
 class Route:
@@ -399,7 +399,7 @@ class Route:
         self,
         planned: bool = False,
         actual: bool = True,
-        mode="osm",  # TODO: should be an Enum
+        mode: DistanceMode = "osm",  # TODO: should be an Enum
         multiprocessing=False,
         planned_distance_matrix=None,
         actual_distance_matrix=None,
@@ -461,7 +461,6 @@ class Route:
             )
 
         elif planned:
-            pass  # Just for precaution
             self.__calculate_driving_distances(
                 [x.location for x in self.planned_sequence],
                 "planned_driving_distances",
@@ -483,7 +482,6 @@ class Route:
             )
 
         elif actual:
-            pass  # Just for precaution
             self.__calculate_driving_distances(
                 [x.location for x in self.actual_sequence],
                 "actual_driving_distances",
@@ -586,10 +584,10 @@ class Route:
         if planned:
             try:
                 self.planned_bbox = [
-                    min([x.location[0] for x in self.planned_sequence]),
-                    min([x.location[1] for x in self.planned_sequence]),
-                    max([x.location[0] for x in self.planned_sequence]),
-                    max([x.location[1] for x in self.planned_sequence]),
+                    min(x.location[0] for x in self.planned_sequence),
+                    min(x.location[1] for x in self.planned_sequence),
+                    max(x.location[0] for x in self.planned_sequence),
+                    max(x.location[1] for x in self.planned_sequence),
                 ]
                 # Calculate the area considering the earth an sphere
                 # 6371 is the radius of the earth in km, area in km^2
@@ -647,47 +645,6 @@ class Route:
             except AttributeError:
                 warnings.warn("Could not find the bounding box of the actual sequence.")
                 self.actual_bbox = None
-
-    @staticmethod  # TODO: Test!
-    def minimum_rotated_rectangle(coords: np.array):
-        # Find the minimum rotated rectangle of a set of coordinates
-
-        # Find the convex hull of the coordinates
-        hull = ConvexHull(coords)
-        # Find the minimum rotated rectangle of the convex hull
-        min_rect = min(
-            (
-                (
-                    Point(coords[hull.vertices[i]]).distance(
-                        Point(coords[hull.vertices[j]])
-                    ),
-                    Point(coords[hull.vertices[i]]),
-                    Point(coords[hull.vertices[j]]),
-                )
-                for i in range(len(hull.vertices))
-                for j in range(i + 1, len(hull.vertices))
-            )
-        )
-        # Find the center of the minimum rotated rectangle
-        # center = Point(
-        #     (min_rect[1].x + min_rect[2].x) / 2, (min_rect[1].y + min_rect[2].y) / 2
-        # )
-        # Find the angle of the minimum rotated rectangle
-        angle = (
-            np.arctan2(min_rect[2].y - min_rect[1].y, min_rect[2].x - min_rect[1].x)
-            * 180
-            / np.pi
-        )
-        # Find the width and height of the minimum rotated rectangle
-        width = min_rect[0]
-        height = min_rect[1].distance(min_rect[2])
-
-        # Define a rectangle with the center, angle, width and height
-        return shapely.affinity.rotate(
-            shapely.geometry.box(-width / 2, -height / 2, width / 2, height / 2),
-            angle,
-            origin="centroid",
-        )
 
     # TODO: Test!
     # TODO: calculate max and min edge length
@@ -791,7 +748,7 @@ class Route:
                 / self.actual_sequence_centroid_mean[1],
             )
 
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-except
             print("Error calculating the centroid of the route: ", e)
             print("The mean and std of the centroid are set to 0")
             self.actual_sequence_centroid_mean = (np.nan, np.nan)
