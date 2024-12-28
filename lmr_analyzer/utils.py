@@ -48,16 +48,7 @@ def drive_distance_gmaps(
     )
 
     # Make the request
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        raise RuntimeError("Request failed")
-
-    # Get the response
-    data = response.json()
-
-    if data["status"] != "OK":
-        raise RuntimeError("Request failed with message: " + data["status"])
+    data = __request_data_from_gmaps(url)
 
     # Get the distance and duration
     distance_km = data["routes"][0]["legs"][0]["distance"]["value"] / 1000
@@ -66,11 +57,24 @@ def drive_distance_gmaps(
     return (distance_km, duration_min)
 
 
+def __request_data_from_gmaps(url: str) -> dict:
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        raise RuntimeError("Request failed")
+
+    data = response.json()
+
+    if data["status"] != "OK":
+        raise RuntimeError("Request failed with message: " + data["status"])
+    return data
+
+
 def drive_distance_osm(
-    origin: Tuple[float, float],
-    destination: Tuple[float, float],
+    origin: Tuple[float, float],  # lon, lat
+    destination: Tuple[float, float],  # lon, lat
     session: requests.Session = None,
-) -> Tuple[float, float]:
+) -> Tuple[float, float]:  # (distance km, duration min)
     """Calculate the driving distance between two points using OSM API.
     Internet connection is required.
 
@@ -84,24 +88,29 @@ def drive_distance_osm(
     lon2, lat2 = destination
     coordinates = f"{lon1},{lat1};{lon2},{lat2}"
 
-    # Get the driving distance from the OpenStreetMaps API
     url = f"http://router.project-osrm.org/route/v1/driving/{coordinates}"
     if session is None:
         session = requests.Session()
+
+    res = __request_data_from_osm(origin, destination, session, url)
+
+    duration_min = res["routes"][0]["duration"] / 60  # in minutes
+    distance_km = res["routes"][0]["distance"] / 1000  # in km
+
+    return (distance_km, duration_min)
+
+
+def __request_data_from_osm(origin, destination, session, url):
     r = session.get(url)
     res = r.json()
 
-    # Check if the route was properly found, raise a warning otherwise
     if res["code"] != "Ok":
         raise RuntimeError(
             f"OSM API returned an {res['code']} error when calculating the "
             f"following distance: from {origin} to {destination}"
         )
 
-    duration_min = res["routes"][0]["duration"] / 60  # in minutes
-    distance_km = res["routes"][0]["distance"] / 1000  # in km
-
-    return (distance_km, duration_min)
+    return res
 
 
 def drive_distance_osmnx(

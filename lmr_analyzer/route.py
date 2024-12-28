@@ -399,7 +399,7 @@ class Route:
         self,
         planned: bool = False,
         actual: bool = True,
-        mode: DistanceMode = "osm",  # TODO: should be an Enum
+        mode: DistanceMode = "osm",
         multiprocessing=False,
         planned_distance_matrix=None,
         actual_distance_matrix=None,

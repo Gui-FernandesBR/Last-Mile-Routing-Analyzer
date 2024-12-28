@@ -37,6 +37,7 @@ class Package:
     def modify_status(self, status: PackageStatus) -> None:
         """Modifies the status of the package."""
         self.status = status
+        self.__validate_status()
 
     def print_info(self) -> None:
         """Prints the package information to the console."""
