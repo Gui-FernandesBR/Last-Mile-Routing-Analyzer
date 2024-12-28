@@ -104,6 +104,7 @@ def plot_graphs(
         plt.show()
 
     plt.close()
+    return None
 
 
 def plot_street_orientation_polar(

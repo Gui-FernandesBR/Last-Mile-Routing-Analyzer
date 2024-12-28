@@ -54,5 +54,9 @@ notebooks = [
 [project.urls]
 Home = "https://github.com/Gui-FernandesBR/Last-Mile-Routing-Analyzer"
 
-[tools.isort]
+[tool.isort]
 profile = "black"
+
+[tool.black]
+line-length = 88
+target-version = ['py310']

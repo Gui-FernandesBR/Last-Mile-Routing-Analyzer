@@ -6,32 +6,35 @@ data/driving_distances folder of the LMR repository
 
 import csv
 import time
+from typing import Tuple
 
 import requests
 
 SESSION = requests.Session()
 
 
-# Get the data from the API
-def drive_distance_osm(origin, destination, i, n):
+def drive_distance_osm(
+    origin: Tuple[float, float],  # lat, lon
+    destination: Tuple[float, float],  # lat, lon
+    i: int,
+    n: int,
+) -> Tuple[float, float]:  # distance, duration
     """Calculate the driving distance between two points using OSM API.
     Internet connection is required.
 
     Parameters
     ----------
-    origin : tuple
-        The origin point coordinates. The coordinates must be in the form (lat, lon).
-    destination : tuple
-        The destination point coordinates. The coordinates must be in the form of
-        (lat, lon).
-    session : requests.Session
-        The session to be used to make the request. If None, a new session will
-        be created. This can be used to reuse the same session for multiple
+    origin : The coordinates must be as (lat, lon).
+    destination : The coordinates must be as (lat, lon).
+    session : The session to be used to make the request. If None, a new session
+        will be created. This can be used to reuse the same session for multiple
         requests, which can impact performance.
+    i : The index of the current line being processed.
+    n : The total number of lines to be processed.
 
     Returns
     -------
-    (distance, duration) : tuple
+    (distance, duration) : Tuple[float, float]
         The distance and duration of the shortest path between the origin and
         destination points. The distance is in meters and the duration is in
         minutes.
@@ -52,49 +55,41 @@ def drive_distance_osm(origin, destination, i, n):
     if res["code"] != "Ok":
         save_results(data, main_file)
         raise ValueError(
-            f"Route not found. OSM API returned an error when calculating the following distance: from {origin} to {destination}"
+            "Route not found. OSM API returned an error when calculating the "
+            f"following distance: from {origin} to {destination}"
         )
     # Get the route length and duration and convert to km and minutes, respectively
     duration = res["routes"][0]["duration"] / 60  # in minutes
     distance = res["routes"][0]["distance"] / 1000  # in km
     # geometry = polyline.decode(res["routes"][0]["geometry"])
 
-    # Return a tuple with the route length and duration
     end = time.time()
     print(
-        "{} of {} ({:.2f}%) completed. OSM API request took {:.2f} s to catch driving distance from ({:.6f}, {:.6f}) to ({:.6f}, {:.6f}) ".format(
-            i,
-            n,
-            100 * i / n,
-            end - start,
-            float(origin[0]),
-            float(origin[1]),
-            float(destination[0]),
-            float(destination[1]),
-        )
+        f"{i} of {n} ({100 * i / n:.2f}%) completed. "
+        f"OSM API request took {end - start:.2f} s to catch driving distance from "
+        f"({origin[0]:.6f}, {origin[1]:.6f}) to ({destination[0]:.6f}, {destination[1]:.6f})"
     )
+    # Return a tuple with the route length and duration
     return (distance, duration)
 
 
-# Open the file with the coordinates
 def read_coord_file(filename):
+    """Open the file with the coordinates"""
     with open(filename, "r") as f:
         data = list(csv.reader(f))
     f.close()
     return data
 
 
-# Calculate the distance and duration between the points
 def calculate_distance_duration(
     data: dict,
     n: int,
 ) -> dict:
-    """_summary_
+    """Calculate the distance and duration between the points
 
     Parameters
     ----------
-    data : _type_
-        _description_
+    data : __description__
     n : Number of lines to be processed
     """
     route = data[1][0]
@@ -129,8 +124,8 @@ def calculate_distance_duration(
     return data
 
 
-# Save the results to a file
 def save_results(data, filename):
+    """Save the results to a file"""
     with open(filename, "w") as f:
         writer = csv.writer(f, delimiter=",", lineterminator="\n")
         writer.writerows(data)
@@ -140,9 +135,10 @@ def save_results(data, filename):
 
 if __name__ == "__main__":
     main_start = time.time()
-    main_file = "Austin.csv"
+    main_file = "./data/driving_distances/austin.csv"
     number_of_lines = 31273  # The number of lines to be processed
     data = read_coord_file(filename=main_file)
+
     try:
         data = calculate_distance_duration(data, number_of_lines)
         save_results(data, filename=main_file)

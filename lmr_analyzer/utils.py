@@ -1,4 +1,3 @@
-import warnings
 from math import asin, cos, radians, sin, sqrt
 from typing import Tuple
 
@@ -138,9 +137,7 @@ def drive_distance_osmnx(
         west -= 0.005
 
     # Get the graph for the area of interest
-    graph = ox.graph_from_bbox(
-        north=north, south=south, east=east, west=west, network_type="drive"
-    )
+    graph = ox.graph_from_bbox(bbox=(west, south, east, north), network_type="drive")
 
     # Get the nearest nodes to the origin and destination points
     origin_node = ox.distance.nearest_nodes(graph, origin[1], origin[0])

@@ -79,7 +79,6 @@ class Geometry:
                 simplify=True,
                 retain_all=False,
                 truncate_by_edge=True,
-                clean_periphery=True,
                 custom_filter=None,
             )
         }
@@ -117,15 +116,11 @@ class Geometry:
             raise ValueError("The east longitude is smaller than the west longitude.")
 
         self.graphs = ox.graph.graph_from_bbox(
-            north=north,
-            south=south,
-            east=east,
-            west=west,
+            bbox=(west, south, east, north),
             network_type="drive",
             simplify=False,
             retain_all=True,
             truncate_by_edge=False,
-            clean_periphery=True,
             custom_filter=None,
         )
 
@@ -162,7 +157,6 @@ class Geometry:
                         simplify=False,
                         retain_all=True,
                         truncate_by_edge=False,
-                        clean_periphery=True,
                         custom_filter=None,
                     )
                 )
@@ -392,10 +386,10 @@ class Geometry:
 
     # Export methods
 
-    def save_graphs_to_shapefile(self, path: str):
-        """Saves the graphs to a shapefile."""
+    def save_graphs_to_geopackage(self, path: str):
+        """Saves the graphs to geopackage."""
         for key, value in self.graphs.items():
-            ox.save_graph_shapefile(value, filepath=path + f"_{key}")
+            ox.save_graph_geopackage(value, filepath=path + f"_{key}")
 
     def export_street_orientation_to_csv(self, filename: str):
         """Exports the street orientation to a csv file."""
@@ -444,7 +438,7 @@ class Geometry:
         df = pd.DataFrame.from_dict(export_dict, orient="index")
         df.to_csv(filename)
 
-    def save(self, filename: str = "geometry") -> None:
+    def save(self, filename: str = "geometry.pck") -> None:
         """Save the geometry object to a file so it can be used later."""
 
         pickled_obj = cloudpickle.dumps(object)
@@ -454,7 +448,7 @@ class Geometry:
         print("Your geometry object was saved, check it out: " + filename)
 
     @classmethod
-    def load(cls, filename: str = "geometry") -> "Geometry":
+    def load(cls, filename: str) -> "Geometry":
         """Load a previously saved geometry pickled file.
         Example: city = geometry.load("filename").
         """

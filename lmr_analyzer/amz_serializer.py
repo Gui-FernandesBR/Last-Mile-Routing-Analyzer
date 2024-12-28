@@ -281,8 +281,9 @@ class AmazonSerializer:
             actual_sequences=ac_sequences_dict
         )
         ## Modify each route in the routes_dict to include the actual sequence
-        for route in self.routes_dict.values():
-            route.set_actual_sequence(ac_sequences_dict[route.name])
+        for _, routes_dict in self.routes_dict.items():
+            for route in routes_dict.values():
+                route.set_actual_sequence(ac_sequences_dict[route.name])
         ac_sequence_time = time.time()
 
         print(
@@ -440,7 +441,7 @@ class AmazonSerializer:
             return None
 
 
-def serialize_packages(packages_dict):
+def serialize_packages(packages_dict: dict):
     """Serializes a package object into a dictionary. The dictionary can be
     used to create a new package object for each package present in the
     packages_dict.
