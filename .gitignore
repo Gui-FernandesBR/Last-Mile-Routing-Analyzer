@@ -30,6 +30,7 @@ docs/_build/
 # Caches
 cache
 .pytest_cache/
+.coverage
 
 # Amazon S3
 amazon-last-mile-challenges/

@@ -20,11 +20,13 @@ class Package:
         self.weight = weight
         self.price = price
 
-    def __post_init__(self):
+        self.__validate_status()
+
+    def __validate_status(self):
         if self.status not in PackageStatus.get_members():
             raise ValueError(
-                "Invalid package status: must be one of the following: "
-                "'to-be-delivered', 'rejected', 'attempted', 'delivered'."
+                f"Invalid package status '{self.status}'. "
+                f"Must be one of the following: {PackageStatus.get_members()}"
             )
 
     @property

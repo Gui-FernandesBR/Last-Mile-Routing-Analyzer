@@ -85,7 +85,10 @@ def read_coord_file(filename):
 
 
 # Calculate the distance and duration between the points
-def calculate_distance_duration(data: dict, n: int,) -> dict:
+def calculate_distance_duration(
+    data: dict,
+    n: int,
+) -> dict:
     """_summary_
 
     Parameters

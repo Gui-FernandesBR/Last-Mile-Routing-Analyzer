@@ -1,33 +1,28 @@
 from enum import Enum
 
 
-class DistanceMode(Enum):
+class BaseEnum(Enum):
+
+    @classmethod
+    def get_members(cls):
+        return [member.value for member in cls]
+
+
+class DistanceMode(BaseEnum):
     HAVERSINE = "haversine"
     OSM = "osm"
     OSMNX = "osmnx"
     GMAPS = "gmaps"
 
-    @staticmethod
-    def get_members():
-        return [member.value for member in LocationType.__members__.values()]
 
-
-class LocationType(Enum):
+class LocationType(BaseEnum):
     DEPOT = "depot"
     PICKUP = "pickup"
     DELIVERY = "delivery"
 
-    @staticmethod
-    def get_members():
-        return [member.value for member in LocationType.__members__.values()]
 
-
-class PackageStatus(Enum):
+class PackageStatus(BaseEnum):
     TO_BE_DELIVERED = "to-be-delivered"
     REJECTED = "rejected"
     ATTEMPTED = "attempted"
     DELIVERED = "delivered"
-
-    @staticmethod
-    def get_members():
-        return [member.value for member in PackageStatus.__members__.values()]
