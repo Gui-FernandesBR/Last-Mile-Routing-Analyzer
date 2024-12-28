@@ -12,7 +12,11 @@ class DistanceMatrix:
     """
 
     def __init__(
-        self, matrix=None, origins=None, destinations=None, sequence=None
+        self,
+        matrix: dict = None,
+        origins: dict = None,
+        destinations: dict = None,
+        sequence: dict = None,
     ) -> None:
         """Initializes the distance matrix class.
 
@@ -102,7 +106,7 @@ class DistanceMatrix:
             self.calculate_matrix_statistics()
 
     def load_support_matrix_file(self, filename: str) -> None:
-        """Loads a support matrix file. A support matrix file is a file containing
+        """Loads a support matrix file, which is a file is a file containing
         the distance matrix and the origins and destinations coordinates. This
         function will load the file and save the matrix, origins and destinations
         as attributes. This can significantly reduce the time needed to perform
@@ -201,8 +205,10 @@ class DistanceMatrix:
         self.min_distance = np.min(distances)
         self.average_distance = np.mean(distances)
         self.std_distance = np.std(distances)
-        self.n_origins = len(self.origins)
-        self.n_destinations = len(self.destinations)
+        self.n_origins = len(self.origins) if self.origins is not None else None
+        self.n_destinations = (
+            len(self.destinations) if self.destinations is not None else None
+        )
         self.n_distances = len(distances)
 
     @property
