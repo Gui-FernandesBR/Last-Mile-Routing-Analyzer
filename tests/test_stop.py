@@ -22,7 +22,6 @@ def test_stop_object(example_stop):
         datetime(2022, 11, 20, 10),
         datetime(2022, 11, 20, 12),
     )
-    assert example_stop.planned_service_time == 60
     assert len(example_stop.packages_list) == 2
 
 

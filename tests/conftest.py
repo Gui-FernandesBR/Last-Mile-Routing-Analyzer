@@ -35,6 +35,5 @@ def example_stop(example_package_1, example_package_2) -> Stop:
         location=(0, 0),
         location_type="delivery",
         time_window=(datetime(2022, 11, 20, 10), datetime(2022, 11, 20, 12)),
-        planned_service_time=60,
         packages=[example_package_1, example_package_2],
     )

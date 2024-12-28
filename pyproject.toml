@@ -13,7 +13,7 @@ classifiers = [
 requires-python = ">=3.10"
 dynamic = ["version", "description"]
 keywords = [
-    "python", 
+    "python",
     "routing",
     "spatial",
     "urban-planning",
