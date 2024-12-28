@@ -93,7 +93,7 @@ def drive_distance_osm(
 
     # Check if the route was properly found, raise a warning otherwise
     if res["code"] != "Ok":
-        warnings.warn(
+        raise RuntimeError(
             f"OSM API returned an {res['code']} error when calculating the "
             f"following distance: from {origin} to {destination}"
         )
